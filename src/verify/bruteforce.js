@@ -8,3 +8,8 @@
 export function gridPoints(polygon, step) {
   throw new Error('TODO block 13: gridPoints');
 }
+
+/** Does q see p, that is: does the segment from q to p stay inside the polygon? */
+export function isVisible(polygon, q, p) {
+  throw new Error('TODO block 13: isVisible');
+}

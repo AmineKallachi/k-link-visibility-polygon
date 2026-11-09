@@ -6,10 +6,32 @@
     <title>k-link visibility with a mirror</title>
   </head>
   <body>
-    <h1>k-link visibility with a mirror</h1>
-    <p>Drag the red sensor or any vertex. Keys: 1 / 2 / 3 = algorithm, + / − = k, e = next mirror edge.</p>
-    <div id="canvas"></div>
-    <p id="status"></p>
+    <header>
+      <h1>k-link visibility with a mirror</h1>
+      <p>An interactive explanation of Mahdavi, Mohades &amp; Kouhestani, <em>Computing k-Link Visibility Polygons in Environments with a Reflective Edge</em> (CCCG 2011).</p>
+      <p>All three canvases below share the same room and sensor: draw or change the room in any of them.</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>1. What does the sensor see?</h2>
+        <p>Drag the sensor: the coloured region is everything it sees directly, without a mirror.</p>
+        <div data-canvas="direct"></div>
+      </section>
+
+      <section>
+        <h2>2. Adding a mirror</h2>
+        <p>One wall is a mirror: the sensor also sees what its mirror image q′ sees through that wall.</p>
+        <div data-canvas="mirror"></div>
+      </section>
+
+      <section>
+        <h2>3. Looking around corners: k links</h2>
+        <p>With k links, a line of sight may bend k − 1 times; switch the mirror on for the goal of this project.</p>
+        <div data-canvas="klink"></div>
+      </section>
+    </main>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
