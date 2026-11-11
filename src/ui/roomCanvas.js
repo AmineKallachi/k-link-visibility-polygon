@@ -2,7 +2,7 @@ import p5 from 'p5';
 import { COLORS, polygon, segment, dot, ring } from './draw.js';
 import { LAYERS, wall } from './layers.js';
 import { buildControls } from './controls.js';
-import { explain } from './errors.js';
+import { explain, isTodo } from './errors.js';
 import { pointInPolygon } from '../geometry/primitives.js';
 
 p5.disableFriendlyErrors = true;
@@ -51,7 +51,12 @@ export class RoomCanvas {
   }
 
   redraw() {
-    this.p.redraw();
+    if (this.redrawPending) return;
+    this.redrawPending = true;
+    requestAnimationFrame(() => {
+      this.redrawPending = false;
+      this.p.redraw();
+    });
   }
 
   sketch(p) {
@@ -77,12 +82,14 @@ export class RoomCanvas {
 
   draw(p) {
     this.notes = [this.scene.roomNote, this.drawing && this.drawError].filter(Boolean);
+    this.todos = [];
     p.background(COLORS.background);
     p.translate(0, HEIGHT);
     p.scale(1, -1);
     if (this.drawing) this.drawChain(p);
     else this.drawScene(p);
     this.controls.showNotes(this.notes);
+    this.controls.showTodos(this.todos);
   }
 
   drawScene(p) {
@@ -98,16 +105,17 @@ export class RoomCanvas {
       try {
         layer.draw(p, this);
       } catch (error) {
-        this.notes.push(`${layer.label}: ${explain(error)}`);
+        if (isTodo(error) && layer.todo) this.todos.push(layer.todo);
+        else this.notes.push(`${layer.label}: ${explain(error)}`);
       }
       p.pop();
     }
 
-    if (this.hasMirror) segment(p, ...wall(this, this.mirrorIndex), COLORS.mirror, 5);
     p.stroke(COLORS.wall);
     p.strokeWeight(2);
     p.noFill();
     polygon(p, this.room);
+    if (this.hasMirror) segment(p, ...wall(this, this.mirrorIndex), COLORS.mirror, 6);
     if (this.has('edit')) for (const v of this.room) dot(p, v, COLORS.corner, 7);
     if (this.on.laser) ring(p, this.aim, COLORS.aim, 14);
     if (this.has('sensor')) dot(p, this.q, sensorReady ? COLORS.sensor : COLORS.sensorOutside, 14);

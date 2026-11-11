@@ -3,34 +3,385 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>k-link visibility with a mirror</title>
+    <title>k-Link Visibility with a Reflective Edge</title>
   </head>
   <body>
     <header>
-      <h1>k-link visibility with a mirror</h1>
-      <p>An interactive explanation of Mahdavi, Mohades &amp; Kouhestani, <em>Computing k-Link Visibility Polygons in Environments with a Reflective Edge</em> (CCCG 2011).</p>
-      <p>All three canvases below share the same room and sensor: draw or change the room in any of them.</p>
+      <h1>k-Link Visibility with a Reflective Edge</h1>
+      <p class="subtitle">
+        An interactive companion to S. S. Mahdavi, A. Mohades and B. Kouhestani,
+        <cite>Computing k-Link Visibility Polygons in Environments with a Reflective Edge</cite> (CCCG 2011)
+      </p>
+      <p class="byline">
+        <span class="author">Amine Kallachi</span><br />
+        INFO-F420 Computational Geometry, Université libre de Bruxelles, 2026
+      </p>
     </header>
 
     <main>
       <section>
-        <h2>1. What does the sensor see?</h2>
-        <p>Drag the sensor: the coloured region is everything it sees directly, without a mirror.</p>
-        <div data-canvas="direct"></div>
+        <h2><span class="number">1</span>Introduction</h2>
+        <p>
+          Place a sensor <var>q</var> inside a room, modelled as a simple polygon <var>P</var> with
+          <var>n</var> corners. A point <var>p</var> of the room is visible from <var>q</var> when the open
+          segment <var>qp</var> lies in the interior of <var>P</var>; the paper uses this clear visibility, so a
+          line of sight may not touch the boundary. All visible points together form the visibility polygon
+          <var>V</var>(<var>q</var>), written <var>V</var><sub><var>P</var></sub>(<var>q</var>) when the room
+          matters: the part of the room that a camera at <var>q</var> films, or that a lamp at <var>q</var>
+          lights. Computing it is a classic problem of computational geometry, and it can be done in linear
+          time (Lee 1983).
+        </p>
+        <p>
+          <em>k-link visibility</em> lets the line of sight bend. A point <var>p</var> is <var>k</var>-link
+          visible from <var>q</var> when a path of at most <var>k</var> straight segments, called links, leads
+          from <var>q</var> to <var>p</var> without leaving the room. Each bend is an intermediate point that
+          sees the previous one and the next one. For <var>k</var> = 1 this is ordinary visibility; for
+          <var>k</var> = 2 the sensor may look around one corner. The region of all such points is the
+          <var>k</var>-link visibility polygon <var>V</var><sup><var>k</var></sup>(<var>q</var>). One way to
+          picture it is a message passed on by <var>k</var> − 1 relays, or a robot that may change direction
+          <var>k</var> − 1 times. The smallest <var>k</var> that reaches a point is its link distance from
+          <var>q</var>.
+        </p>
+
+        <figure class="wide">
+          <div class="panels">
+            <div>
+              <img src="figures/intro-a.svg" alt="With one link, q sees its own room and a narrow beam into the corridor." />
+              <span>(a) <var>k</var> = 1</span>
+            </div>
+            <div>
+              <img src="figures/intro-b.svg" alt="With two links, q also sees the whole corridor and parts of the other rooms." />
+              <span>(b) <var>k</var> = 2</span>
+            </div>
+            <div>
+              <img src="figures/intro-c.svg" alt="With two links and a mirror on the corridor floor, q also sees most of the middle room and more of the right room." />
+              <span>(c) <var>k</var> = 2, mirror <var>e</var></span>
+            </div>
+          </div>
+          <figcaption>
+            <b>Figure 1.</b> One room and one sensor <var>q</var> in three settings. Dark yellow: seen with one
+            link. Light yellow: seen with two links. Hatched: not seen. Dashed lines are windows, edges of a
+            region that are not walls. Each red path is a line of sight with the allowed number of links. In (c)
+            the path bounces off the mirror <var>e</var> and still counts as one link; the blue dashed lines bound
+            what <var>q</var> sees through the mirror. Drawn for this page in the style of the figures of
+            Mahdavi et al. (2011).
+          </figcaption>
+        </figure>
+
+        <p>
+          The paper adds one reflective edge <var>e</var>, a mirror. A line of sight that hits <var>e</var>
+          bounces off with equal angles, and the bounce does not count as an extra link: two points that see
+          each other through the mirror are 1-link visible. In Figure 1(c) the mirror lets <var>q</var> look
+          into the middle room with a single link, and the second link reaches further still.
+        </p>
+        <p>
+          Mahdavi et al. compute the <var>k</var>-link visibility polygon with a mirror,
+          <var>V</var><span class="ss"><span>k</span><span>P,e</span></span>(<var>q</var>), in linear time,
+          <var>O</var>(<var>n</var> + <var>m</var>), where the sensor may also be a segment or a polygon with
+          <var>m</var> corners. The running time does not depend on <var>k</var>, and it is optimal. Gluing the
+          room to its mirror image along <var>e</var> would turn the problem into ordinary
+          <var>k</var>-link visibility, but only when the whole room lies on one side of the line through
+          <var>e</var>. When the room crosses that line and the mirror ends in reflex corners, the glued room is
+          no longer a simple polygon, and each new level would need the union of four polygons.
+        </p>
+        <p>
+          The key observation of the paper avoids this: when <var>V</var><sup><var>k</var></sup> is built level
+          by level, the mirror only matters at two levels. All other levels are ordinary <var>k</var>-link
+          visibility (Maheshwari et al. 2000), and the two special levels reuse the visibility polygon with a
+          mirror of Kouhestani et al. (2010).
+        </p>
+        <p>
+          The sections below follow this construction step by step. Lemmas, theorems and algorithms keep their
+          numbers from the paper. Figures 2 to 4 share one room and one sensor: draw a new room in any of them,
+          or drag a corner or the sensor, and every figure follows. Parts that are not implemented yet are
+          marked <span class="todo">To do</span>.
+        </p>
       </section>
 
       <section>
-        <h2>2. Adding a mirror</h2>
-        <p>One wall is a mirror: the sensor also sees what its mirror image q′ sees through that wall.</p>
-        <div data-canvas="mirror"></div>
+        <h2><span class="number">2</span>Direct visibility</h2>
+        <p>
+          A window of <var>V</var>(<var>q</var>) starts where the view grazes a reflex corner and continues to
+          a wall further away. The part of the room behind a window is a pocket: the sensor cannot look into it
+          directly. Pockets are where the next link has to go.
+        </p>
+        <figure>
+          <div data-canvas="direct"></div>
+          <figcaption>
+            <b>Figure 2.</b> The visibility polygon <var>V</var>(<var>q</var>). Drag the sensor or a corner, or
+            draw a new room.
+          </figcaption>
+        </figure>
+        <p>
+          To compute <var>V</var>(<var>q</var>), a ray turns around <var>q</var> and stops at every corner of
+          the room, in order of angle. A balanced search tree keeps the walls that the ray crosses, closest
+          first. Each time the closest wall changes, the boundary of <var>V</var>(<var>q</var>) jumps along a
+          window. For a room with <var>n</var> corners this rotational sweep takes
+          <var>O</var>(<var>n</var> log <var>n</var>) time (de Berg et al. 2008, §15.2). All tests use exact
+          arithmetic on whole-number coordinates, so a corner that lies exactly on a line of sight is still
+          handled correctly.
+        </p>
+        <p>
+          To check the result independently, tick <i>Check with brute force</i>. Every point of a fine grid is
+          then tested on its own: a ray is cast from <var>q</var> towards the point, and the point is visible if
+          the ray reaches it before a wall stops it. Visible points are green and hidden points grey. When the
+          sweep is correct, the green points fill exactly the yellow region.
+        </p>
       </section>
 
       <section>
-        <h2>3. Looking around corners: k links</h2>
-        <p>With k links, a line of sight may bend k − 1 times; switch the mirror on for the goal of this project.</p>
-        <div data-canvas="klink"></div>
+        <h2><span class="number">3</span>Seeing through a mirror <span class="todo">To do</span></h2>
+        <p>
+          One wall <var>e</var> is now a mirror. Two points <var>x</var> and <var>y</var> see each other through
+          <var>e</var> when some point <var>r</var> of <var>e</var> sees both, and the segments <var>xr</var> and
+          <var>yr</var> lie on opposite sides of the inward normal of <var>e</var> at <var>r</var> and make the
+          same angle with it. The point <var>r</var> is not an intermediate point, so <var>x</var> and
+          <var>y</var> are still 1-link visible. What the sensor sees in the mirror is therefore exactly what its
+          mirror image <var>q</var>′ sees through the part of <var>e</var> that <var>q</var> itself sees.
+        </p>
+        <p>
+          The region <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>q</var>) is the union of
+          <var>V</var><sub><var>P</var></sub>(<var>q</var>) and the part of the room seen through the mirror.
+          Kouhestani et al. (2010) compute it in <var>O</var>(<var>n</var>) time for a point or a segment, and
+          merge the two parts in linear time by walking along both boundaries in order. For a polygon
+          <var>O</var>, Mahdavi et al. first compute <var>V</var><sub><var>P</var></sub>(<var>O</var>) with the
+          algorithm of Langetepe et al. (2010) and then add the parts that <var>O</var> sees through
+          <var>e</var>.
+        </p>
+        <p class="statement">
+          <b>Lemma 1.</b> Let <var>Q</var> be a simple polygon with <var>m</var> corners inside <var>P</var>.
+          Then <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>Q</var>) can be computed in
+          <var>O</var>(<var>n</var> + <var>m</var>) time.
+        </p>
+        <figure>
+          <div data-canvas="mirror"></div>
+          <figcaption>
+            <b>Figure 3.</b> The mirror wall <var>e</var>, the mirror image <var>q</var>′ and the region seen
+            through the mirror. Use <i>Next mirror wall</i> to move the mirror.
+          </figcaption>
+        </figure>
+        <p>
+          The windows of <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>q</var>) behave a little
+          differently from those of <var>V</var>(<var>q</var>). A window may now bend at an interior point
+          (Mahdavi et al. 2011, Figure 2), and only few windows can reach the mirror. Any segment inside
+          <var>P</var> crosses at most two windows of a visibility polygon (Bose et al. 2002), and the mirror is
+          such a segment:
+        </p>
+        <p class="statement">
+          <b>Lemma 2.</b> At most two windows of <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>O</var>)
+          intersect the mirror <var>e</var>.
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="number">4</span>k-link visibility with a mirror <span class="todo">To do</span></h2>
+        <p>
+          The paper first builds <var>k</var>-link visibility without the mirror, then handles two links with
+          the mirror, and finally combines both for any <var>k</var>.
+        </p>
+
+        <h3><span class="number">4.1</span>Without the mirror</h3>
+        <p>
+          <var>V</var><sup>1</sup>(<var>q</var>) is the visibility polygon of Figure 2, and
+          <var>V</var><sup>2</sup>(<var>q</var>) adds everything visible from some point of it. Such a new point
+          lies in a pocket of <var>V</var>(<var>q</var>) and is seen from the window of that pocket. Each level
+          therefore needs the weak visibility polygon <var>WV</var><sub><var>P</var></sub>(<var>s</var>) of a
+          segment <var>s</var>: the points of <var>P</var> that see some point of <var>s</var> other than its
+          endpoints. Guibas et al. (1987) compute it in linear time.
+        </p>
+        <p>
+          Repeating this level by level gives the window partitioning: <var>P</var> is cut into regions whose
+          points have the same link distance from <var>q</var>, in <var>O</var>(<var>n</var>) time (Maheshwari
+          et al. 2000). The same works for an object <var>O</var>. The link distance between <var>O</var> and a
+          segment <var>s</var> is 1 when no window of <var>V</var><sub><var>P</var></sub>(<var>O</var>) has
+          <var>s</var> completely inside its pocket, and otherwise 1 plus the link distance between
+          <var>s</var> and that window. The link distance between two segments takes <var>O</var>(<var>n</var>)
+          time (Suri 1986; Maheshwari et al. 2000).
+        </p>
+        <p class="statement">
+          <b>Lemma 7.</b> Let <var>O</var> be an object of complexity <var>m</var> inside <var>P</var>. Then
+          <var>V</var><span class="ss"><span>k</span><span>P</span></span>(<var>O</var>) can be computed in
+          <var>O</var>(<var>n</var> + <var>m</var>) time.
+        </p>
+        <figure>
+          <div data-canvas="klink"></div>
+          <figcaption>
+            <b>Figure 4.</b> The region seen with at most <var>k</var> links. Without the mirror this is
+            Lemma 7; with the mirror it is Algorithm 4.2 below.
+          </figcaption>
+        </figure>
+
+        <h3><span class="number">4.2</span>Two links with the mirror</h3>
+        <p>
+          A point of <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>O</var>) is
+          reached through one intermediate point, and each of the two links can be direct (−<var>e</var>) or go
+          through the mirror (+<var>e</var>). This gives four groups of points: {−<var>e</var>,
+          −<var>e</var>}, {+<var>e</var>, −<var>e</var>}, {−<var>e</var>, +<var>e</var>} and
+          {+<var>e</var>, +<var>e</var>}. As before, every new point is seen from a window of
+          <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>O</var>), and the next lemmas say what each
+          window adds to its pocket.
+        </p>
+        <p class="statement">
+          <b>Lemma 3.</b> If the pocket of a window <var>w</var><sub><var>i</var></sub> of
+          <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>O</var>) does not meet <var>e</var>, every
+          point of <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>O</var>) in that
+          pocket is seen directly from <var>w</var><sub><var>i</var></sub>. Other windows add nothing there, and
+          neither does the mirror.
+        </p>
+        <p class="statement">
+          <b>Lemma 4.</b> If the pocket of <var>w</var><sub><var>i</var></sub> meets <var>e</var>, the points of
+          <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>O</var>) in that pocket are
+          exactly <var>V</var><sub>pocket(<var>w</var><sub><var>i</var></sub>),<var>e</var></sub>(<var>w</var><sub><var>i</var></sub>),
+          the region that <var>w</var><sub><var>i</var></sub> sees inside its pocket, with the mirror.
+        </p>
+        <p class="statement">
+          <b>Lemma 5.</b> Adding
+          <var>V</var><sub>pocket(<var>w</var><sub><var>i</var></sub>),<var>e</var><sub><var>i</var></sub></sub>(<var>w</var><sub><var>i</var></sub>)
+          to <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>O</var>) for every window
+          <var>w</var><sub><var>i</var></sub>, where <var>e</var><sub><var>i</var></sub> is the part of
+          <var>e</var> inside its pocket, gives exactly
+          <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>O</var>). The proof checks
+          each of the four groups.
+        </p>
+        <div class="algorithm">
+          <p><b>Algorithm 3.</b> <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>O</var>)</p>
+          <ol>
+            <li>Compute <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>O</var>).</li>
+            <li>
+              Let <var>w</var><sub>1</sub>, …, <var>w</var><sub><var>d</var></sub> be the windows of
+              <var>V</var><sub><var>P</var></sub>(<var>O</var>), and <var>e</var><sub><var>i</var></sub> the part
+              of <var>e</var> inside pocket(<var>w</var><sub><var>i</var></sub>).
+            </li>
+            <li>
+              Compute every
+              <var>V</var><sub>pocket(<var>w</var><sub><var>i</var></sub>),<var>e</var><sub><var>i</var></sub></sub>(<var>w</var><sub><var>i</var></sub>)
+              and add it to <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>O</var>).
+            </li>
+            <li>Return the result.</li>
+          </ol>
+        </div>
+        <p>
+          Step 1 takes <var>O</var>(<var>n</var> + <var>m</var>) time by Lemma 1. In step 3 a pocket with
+          <var>n</var><sub><var>i</var></sub> corners takes <var>O</var>(<var>n</var><sub><var>i</var></sub>)
+          time, and two pockets share at most one corner, so the <var>n</var><sub><var>i</var></sub> add up to
+          <var>O</var>(<var>n</var>).
+        </p>
+        <p class="statement">
+          <b>Theorem 6.</b> <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>O</var>) can
+          be computed in <var>O</var>(<var>n</var> + <var>m</var>) time, where <var>m</var> is the complexity
+          of <var>O</var>.
+        </p>
+
+        <h3><span class="number">4.3</span>Any number of links</h3>
+        <p>
+          Let <var>ℓ</var> be the link distance between <var>O</var> and the mirror <var>e</var>. The paper
+          calls it <var>m</var>, but here <var>m</var> is already the size of <var>O</var>. Below level
+          <var>ℓ</var> no path reaches the mirror, so those levels are ordinary <var>k</var>-link visibility. At
+          levels <var>ℓ</var> and <var>ℓ</var> + 1 the mirror is reachable, and Section 3 and Algorithm 3
+          apply. After that, the pockets of the region no longer meet <var>e</var>, so the mirror adds nothing
+          more:
+        </p>
+        <p class="statement">
+          <b>Lemma 8.</b> Let <var>Q</var> =
+          <var>V</var><span class="ss"><span>ℓ+1</span><span>P,e</span></span>(<var>O</var>). Then
+          <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>Q</var>) =
+          <var>V</var><sub><var>P</var></sub>(<var>Q</var>).
+        </p>
+        <div class="algorithm">
+          <p><b>Algorithm 4.2.</b> <var>V</var><span class="ss"><span>k</span><span>P,e</span></span>(<var>O</var>)</p>
+          <ol>
+            <li>Compute the link distance <var>ℓ</var> between <var>O</var> and <var>e</var>.</li>
+            <li>
+              If <var>k</var> &lt; <var>ℓ</var>, return
+              <var>V</var><span class="ss"><span>k</span><span>P</span></span>(<var>O</var>).
+            </li>
+            <li>
+              Otherwise:
+              <ol>
+                <li>Compute <var>Q</var> = <var>V</var><span class="ss"><span>ℓ−1</span><span>P</span></span>(<var>O</var>).</li>
+                <li>If <var>k</var> = <var>ℓ</var>, return <var>V</var><sub><var>P</var>,<var>e</var></sub>(<var>Q</var>).</li>
+                <li>Compute <var>R</var> = <var>V</var><span class="ss"><span>2</span><span>P,e</span></span>(<var>Q</var>).</li>
+                <li>Let <var>w</var><sub>1</sub>, …, <var>w</var><sub><var>d</var></sub> be the windows of <var>R</var>.</li>
+                <li>
+                  Compute every
+                  <var>V</var><span class="ss"><span>k−ℓ−1</span><span>pocket(w<sub>i</sub>)</span></span>(<var>w</var><sub><var>i</var></sub>)
+                  and add it to <var>R</var>.
+                </li>
+                <li>Return the result.</li>
+              </ol>
+            </li>
+          </ol>
+        </div>
+        <p>
+          <var>R</var> is <var>V</var><span class="ss"><span>ℓ+1</span><span>P,e</span></span>(<var>O</var>), so by
+          Lemma 8 step 3(e) can ignore the mirror. Steps 3(a) to 3(d) take <var>O</var>(<var>n</var> +
+          <var>m</var>) time by Lemma 7, Lemma 1 and Theorem 6. In step 3(e) a pocket with
+          <var>n</var><sub><var>i</var></sub> corners takes <var>O</var>(<var>n</var><sub><var>i</var></sub>)
+          time, and the <var>n</var><sub><var>i</var></sub> add up to at most <var>n</var>.
+        </p>
+        <p class="statement">
+          <b>Theorem 9.</b> <var>V</var><span class="ss"><span>k</span><span>P,e</span></span>(<var>O</var>) can
+          be computed in <var>O</var>(<var>n</var> + <var>m</var>) time, for every <var>k</var> from 1 to
+          <var>n</var>. The running time does not depend on <var>k</var>.
+        </p>
+        <p>
+          The paper ends with open questions. With two or more mirrors a beam can bounce back and forth, and it
+          is not clear how to compute the visibility polygon of a point when the number of reflections is
+          unlimited. The authors name as future work the <var>k</var>-link visibility polygon in a room with
+          several mirrors, when each beam may reflect at most <var>t</var> times.
+        </p>
+      </section>
+
+      <section class="references">
+        <h2>References</h2>
+        <ul>
+          <li>
+            M. de Berg, O. Cheong, M. van Kreveld and M. Overmars. <cite>Computational Geometry: Algorithms and
+            Applications</cite>, 3rd edition. Springer, 2008.
+          </li>
+          <li>
+            P. Bose, A. Lubiw and J. I. Munro. Efficient visibility queries in simple polygons.
+            <cite>Computational Geometry: Theory and Applications</cite> 23, 313–335, 2002.
+          </li>
+          <li>
+            L. J. Guibas, J. Hershberger, D. Leven, M. Sharir and R. E. Tarjan. Linear-time algorithms for
+            visibility and shortest path problems inside triangulated simple polygons. <cite>Algorithmica</cite>
+            2, 209–233, 1987.
+          </li>
+          <li>
+            B. Kouhestani, M. Asgaripour, S. S. Mahdavi, A. Nouri and A. Mohades. Visibility polygons in the
+            presence of a mirror edge. <cite>Proceedings of the 26th European Workshop on Computational
+            Geometry (EuroCG)</cite>, 209–212, 2010.
+          </li>
+          <li>
+            E. Langetepe, R. Penninger and J. Tulke. Computing the visibility area between two simple polygons
+            in linear time. <cite>Proceedings of the 26th European Workshop on Computational Geometry
+            (EuroCG)</cite>, 237–240, 2010.
+          </li>
+          <li>
+            D. T. Lee. Visibility of a simple polygon. <cite>Computer Vision, Graphics, and Image
+            Processing</cite> 22, 207–221, 1983.
+          </li>
+          <li>
+            S. S. Mahdavi, A. Mohades and B. Kouhestani. Computing k-link visibility polygons in environments
+            with a reflective edge. <cite>Proceedings of the 23rd Canadian Conference on Computational
+            Geometry (CCCG)</cite>, 2011.
+          </li>
+          <li>
+            A. Maheshwari, J.-R. Sack and H. N. Djidjev. Link distance problems. In J.-R. Sack and J. Urrutia
+            (eds.), <cite>Handbook of Computational Geometry</cite>, 519–558. Elsevier, 2000.
+          </li>
+          <li>
+            S. Suri. A linear time algorithm for minimum link paths inside a simple polygon. <cite>Computer
+            Vision, Graphics, and Image Processing</cite> 35, 99–110, 1986.
+          </li>
+        </ul>
       </section>
     </main>
+
+    <footer>
+      <p>Amine Kallachi, INFO-F420 Computational Geometry, Université libre de Bruxelles, 2026.</p>
+    </footer>
 
     <script type="module" src="/src/main.js"></script>
   </body>

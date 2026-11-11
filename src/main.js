@@ -1,3 +1,6 @@
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/literata/opsz.css';
+import '@fontsource-variable/literata/opsz-italic.css';
 import './style.css';
 import { Scene } from './ui/scene.js';
 import { RoomCanvas } from './ui/roomCanvas.js';
@@ -11,7 +14,7 @@ const scene = new Scene('comb');
 // Layers: visible, windows, mirrorView, klink, laser, fan, reflex, grid.
 const CANVASES = {
   direct: {
-    features: { edit: true, sensor: true, visible: true, windows: true, laser: false, fan: false, reflex: false, grid: false },
+    features: { edit: true, sensor: true, visible: 'always', grid: false },
   },
   mirror: {
     features: { edit: true, sensor: true, mirror: 'always', mirrorView: true, visible: false },

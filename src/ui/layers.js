@@ -1,5 +1,5 @@
 // The layers a canvas can show, in drawing order. Each layer only calls geometry functions and draws the result.
-import { COLORS, regions, segment, dot, ring } from './draw.js';
+import { COLORS, regions, segment, dot, dots, ring } from './draw.js';
 import { reflectPoint } from '../geometry/primitives.js';
 import { rayCast } from '../geometry/raycast.js';
 import { reflexVertices } from '../geometry/room.js';
@@ -9,7 +9,7 @@ import { mirrorVisibilityPolygon } from '../geometry/mirror.js';
 import { kLinkRegion, kLinkMirrorRegion } from '../geometry/klink.js';
 import { gridPoints, isVisible } from '../verify/bruteforce.js';
 
-const GRID_STEP = 20;
+const GRID_STEP = 3;
 
 export const wall = (s, i) => [s.room[i], s.room[(i + 1) % s.room.length]];
 
@@ -17,6 +17,7 @@ export const LAYERS = [
   {
     key: 'klink',
     label: 'k-link region',
+    todo: 'the region seen with at most k links',
     needsSensor: true,
     draw(p, s) {
       const region = s.hasMirror
@@ -36,6 +37,7 @@ export const LAYERS = [
   {
     key: 'mirrorView',
     label: 'Seen through the mirror',
+    todo: 'the mirror image q′ and the region seen through the mirror',
     needsSensor: true,
     draw(p, s) {
       if (!s.hasMirror) return;
@@ -48,21 +50,27 @@ export const LAYERS = [
   },
   {
     key: 'grid',
-    label: 'Check grid',
+    label: 'Check with brute force',
     needsSensor: true,
     draw(p, s) {
+      const seen = [];
+      const hidden = [];
       for (const point of gridPoints(s.room, GRID_STEP)) {
-        dot(p, point, isVisible(s.room, s.q, point) ? COLORS.gridSeen : COLORS.gridHidden, 5);
+        (isVisible(s.room, s.q, point) ? seen : hidden).push(point);
       }
+      const size = Math.min(4, GRID_STEP * 0.7);
+      dots(p, hidden, COLORS.gridHidden, size);
+      dots(p, seen, COLORS.gridSeen, size);
     },
   },
   {
     key: 'windows',
     label: 'Windows',
+    todo: 'the windows of the visible region',
     needsSensor: true,
     draw(p, s) {
       for (const [a, b] of windows(s.room, visibilityPolygon(s.room, s.q))) {
-        segment(p, a, b, COLORS.window, 3);
+        segment(p, a, b, COLORS.window, 1.5, true);
       }
     },
   },

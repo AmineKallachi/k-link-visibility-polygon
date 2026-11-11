@@ -1,10 +1,35 @@
 import { LAYERS } from './layers.js';
+import { COLORS, css } from './draw.js';
+
+const LEGEND = [
+  { key: 'sensor', label: 'sensor q', shape: 'dot', color: COLORS.sensor },
+  { key: 'visible', label: 'visible region V(q)', shape: 'box', color: COLORS.visible },
+  { key: 'grid', label: 'visible (brute force)', shape: 'dot small', color: COLORS.gridSeen },
+  { key: 'grid', label: 'hidden (brute force)', shape: 'dot small', color: COLORS.gridHidden },
+  { key: 'mirror', label: 'mirror e', shape: 'bar', color: COLORS.mirror },
+  { key: 'mirrorView', label: 'mirror image q′', shape: 'ring', color: COLORS.mirrorImage },
+  { key: 'mirrorView', label: 'seen through the mirror', shape: 'box', color: COLORS.mirrorView },
+  { key: 'klink', label: 'k-link region', shape: 'box', color: COLORS.klink },
+  { key: 'windows', label: 'windows', shape: 'bar', color: COLORS.window },
+];
 
 export function buildControls(host, canvas) {
   const bar = element('div', 'controls');
   const canvasHost = element('div', 'canvas');
+  const todoNote = element('div', 'todo-note');
+  const legend = element('div', 'legend');
   const status = element('div', 'status');
-  host.append(bar, canvasHost, status);
+  canvasHost.append(todoNote);
+  host.append(bar, canvasHost, legend, status);
+
+  const legendItems = [];
+  for (const { key, label, shape, color } of LEGEND) {
+    if (!canvas.has(key)) continue;
+    const item = element('span', shape, label);
+    item.style.setProperty('--swatch', css(color));
+    legend.append(item);
+    legendItems.push({ key, item });
+  }
 
   const update = (change) => {
     change();
@@ -24,13 +49,26 @@ export function buildControls(host, canvas) {
     bar.append(checkbox(label, canvas.on[key], (on) => update(() => { canvas.on[key] = on; })));
   }
 
-  let shown = '';
+  let shownNotes = '';
+  let shownTodos = '';
   return {
     canvasHost,
     showNotes(notes) {
-      if (notes.join('\n') === shown) return;
-      shown = notes.join('\n');
+      for (const { key, item } of legendItems) item.hidden = !canvas.on[key];
+      if (notes.join('\n') === shownNotes) return;
+      shownNotes = notes.join('\n');
       status.replaceChildren(...notes.map((note) => element('div', note.includes('error:') ? 'error' : '', note)));
+    },
+    showTodos(todos) {
+      if (todos.join('\n') === shownTodos) return;
+      shownTodos = todos.join('\n');
+      todoNote.replaceChildren(
+        ...todos.map((todo) => {
+          const line = element('p');
+          line.append(element('b', '', 'To do:'), ` ${todo}`);
+          return line;
+        }),
+      );
     },
   };
 }
