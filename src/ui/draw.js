@@ -16,11 +16,12 @@ export const COLORS = {
   visible: [242, 210, 122, 220],
   window: [28, 35, 41],
   mirror: [58, 110, 165],
-  mirrorView: [58, 110, 165, 55],
+  mirrorView: [58, 110, 165, 75],
   mirrorImage: [58, 110, 165],
   klink: [246, 228, 175, 220],
   gridSeen: [46, 125, 90],
   gridHidden: [165, 173, 181],
+  gridMirror: [40, 90, 160],
   drawing: [58, 110, 165],
 };
 

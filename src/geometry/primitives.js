@@ -99,5 +99,14 @@ export function pointInPolygon(p, polygon) {
 
 /** Mirror image of point p across the line through a and b (used for q' in block 7). */
 export function reflectPoint(p, a, b) {
-  throw new Error('TODO block 1: reflectPoint');
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const dd = dx * dx + dy * dy;
+  if (dd === 0) {
+    throw new Error("reflectPoint: a and b are the same point, no line to reflect in");
+  }
+  const t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / dd;
+  const footX = a.x + t * dx;
+  const footY = a.y + t * dy;
+  return { x: 2 * footX - p.x, y: 2 * footY - p.y };
 }

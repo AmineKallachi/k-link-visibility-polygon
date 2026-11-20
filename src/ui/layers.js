@@ -5,9 +5,9 @@ import { rayCast } from '../geometry/raycast.js';
 import { reflexVertices } from '../geometry/room.js';
 import { visibilityPolygon } from '../geometry/visibility.js';
 import { windows } from '../geometry/pockets.js';
-import { mirrorVisibilityPolygon } from '../geometry/mirror.js';
+import { mirrorRegion, visibleMirrorPart } from '../geometry/mirror.js';
 import { kLinkRegion, kLinkMirrorRegion } from '../geometry/klink.js';
-import { gridPoints, isVisible } from '../verify/bruteforce.js';
+import { gridPoints, isVisible, isVisibleThroughMirror } from '../verify/bruteforce.js';
 
 const GRID_STEP = 3;
 
@@ -43,9 +43,13 @@ export const LAYERS = [
       if (!s.hasMirror) return;
       const [a, b] = wall(s, s.mirrorIndex);
       const image = reflectPoint(s.q, a, b);
-      segment(p, s.q, image, COLORS.mirrorImage, 1, true);
+      const direct = visibilityPolygon(s.room, s.q);
+      regions(p, mirrorRegion(s.room, s.mirrorIndex, s.q, direct), COLORS.mirrorView);
+      for (const m of visibleMirrorPart(s.room, s.mirrorIndex, direct) ?? []) {
+        segment(p, s.q, m, COLORS.mirrorImage, 1, true);
+        segment(p, image, m, COLORS.mirrorImage, 1, true);
+      }
       ring(p, image, COLORS.mirrorImage, 14);
-      regions(p, mirrorVisibilityPolygon(s.room, s.mirrorIndex, s.q), COLORS.mirrorView);
     },
   },
   {
@@ -61,6 +65,26 @@ export const LAYERS = [
       const size = Math.min(4, GRID_STEP * 0.7);
       dots(p, hidden, COLORS.gridHidden, size);
       dots(p, seen, COLORS.gridSeen, size);
+    },
+  },
+  {
+    key: 'mirrorGrid',
+    label: 'Check with brute force',
+    todo: 'the brute-force check through the mirror',
+    needsSensor: true,
+    draw(p, s) {
+      const seen = [];
+      const reflected = [];
+      const hidden = [];
+      for (const point of gridPoints(s.room, GRID_STEP)) {
+        if (isVisible(s.room, s.q, point)) seen.push(point);
+        else if (s.hasMirror && isVisibleThroughMirror(s.room, s.mirrorIndex, s.q, point)) reflected.push(point);
+        else hidden.push(point);
+      }
+      const size = Math.min(4, GRID_STEP * 0.7);
+      dots(p, hidden, COLORS.gridHidden, size);
+      dots(p, seen, COLORS.gridSeen, size);
+      dots(p, reflected, COLORS.gridMirror, size);
     },
   },
   {

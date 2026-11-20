@@ -9,6 +9,9 @@ const LEGEND = [
   { key: 'mirror', label: 'mirror e', shape: 'bar', color: COLORS.mirror },
   { key: 'mirrorView', label: 'mirror image q′', shape: 'ring', color: COLORS.mirrorImage },
   { key: 'mirrorView', label: 'seen through the mirror', shape: 'box', color: COLORS.mirrorView },
+  { key: 'mirrorGrid', label: 'seen directly (brute force)', shape: 'dot small', color: COLORS.gridSeen },
+  { key: 'mirrorGrid', label: 'seen through the mirror (brute force)', shape: 'dot small', color: COLORS.gridMirror },
+  { key: 'mirrorGrid', label: 'hidden (brute force)', shape: 'dot small', color: COLORS.gridHidden },
   { key: 'klink', label: 'k-link region', shape: 'box', color: COLORS.klink },
   { key: 'windows', label: 'windows', shape: 'bar', color: COLORS.window },
 ];

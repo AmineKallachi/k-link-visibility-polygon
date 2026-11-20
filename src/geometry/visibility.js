@@ -4,6 +4,8 @@ import { calculateDeterminant, orientation, segmentIntersection, LEFT, RIGHT, ON
 
 const FAR = 10000;
 
+//AI GENERATED, TODO
+
 const sign = (a, b, p) => Math.sign(calculateDeterminant(a, b, p));
 const dist2 = (q, p) => (p.x - q.x) ** 2 + (p.y - q.y) ** 2;
 const farPoint = (q, w) => ({ x: q.x + FAR * (w.x - q.x), y: q.y + FAR * (w.y - q.y) });
@@ -20,12 +22,16 @@ function inFront(s1, s2, q) {
   return (sa !== 0 ? sa : sb) === sign(c, d, q);
 }
 
-/** Where the ray from q through w meets wall [a, b]. */
-function meet(q, w, [a, b]) {
-  if (sameDirection(q, w, a)) return a;
-  if (sameDirection(q, w, b)) return b;
+/**
+ * Where the ray from q through w meets wall [a, b]. The point records where it lies, like rayCast:
+ * `vertex: i` for corner i of the room, `wall: i` for a point inside wall i.
+ */
+function meet(q, w, wall) {
+  const [a, b] = wall;
+  if (sameDirection(q, w, a)) return { x: a.x, y: a.y, vertex: wall.index };
+  if (sameDirection(q, w, b)) return { x: b.x, y: b.y, vertex: wall.next };
   const hit = segmentIntersection(q, farPoint(q, w), a, b);
-  return { x: hit.x, y: hit.y };
+  return { x: hit.x, y: hit.y, wall: wall.index };
 }
 
 /** Does wall [a, b] cross the ray from q through w between its endpoints, in front of q? */
@@ -44,11 +50,12 @@ function endsOnRayFromRight(q, w, [a, b]) {
  * Block 3: V_P(q), the region of polygon P visible from point q (q strictly inside P).
  * Rotational sweep: de Berg et al. 2008, §15.2, pp. 326–329, applied to exercise 3.14 (p. 61); Asano 1985.
  * O(n log n): sorting the corners, and each wall is inserted and removed once in a balanced tree.
- * Returns a polygon (counterclockwise).
+ * Returns a polygon (counterclockwise). Each point records the corner (`vertex`) or wall (`wall`) it lies on,
+ * so a window (an edge that is not on a wall) can be found without testing computed points again.
  */
 export function visibilityPolygon(polygon, q) {
   const n = polygon.length;
-  const walls = polygon.map((a, i) => [a, polygon[(i + 1) % n]]);
+  const walls = polygon.map((a, i) => Object.assign([a, polygon[(i + 1) % n]], { index: i, next: (i + 1) % n }));
   const corners = polygon
     .map((v, i) => ({ v, i, angle: Math.atan2(v.y - q.y, v.x - q.x), d: dist2(q, v) }))
     .sort((e, f) => e.angle - f.angle || e.d - f.d);

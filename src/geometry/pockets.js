@@ -5,8 +5,33 @@
  * Returns an array of segments.
  */
 export function windows(polygon, region) {
-  throw new Error('TODO block 2: windows');
+  const n = polygon.length
+  let result = []
+  for (let i = 0; i < region.length; i++) {
+    let u = region[i]
+    let v = region[(i + 1)%region.length]
+    if(!shareAWall(wallsOf(u,n), wallsOf(v, n))){
+      result.push([u, v])
+    }
+  }
+  return result
 }
+
+function wallsOf(p, n) {
+  if (typeof p.wall !== 'undefined') {
+    return [p.wall];
+  }
+  if(typeof p.vertex !== 'undefined'){
+    return [p.vertex, (p.vertex - 1 + n)%n]
+  }
+  throw new Error("windows needs the vertex/wall labels from visibilityPolygon");
+}
+
+function shareAWall(A, B) {
+  return A.some(w => B.includes(w));
+}
+
+
 
 /**
  * Block 4: the pocket behind a window = the part of P on the other side of the window.
