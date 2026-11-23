@@ -4,6 +4,8 @@
 //   segment = [a, b]            (two points)
 //   polygon = [p0, p1, ..., pn-1] in COUNTERCLOCKWISE order, no repeated last point
 //   edge i  = segment from polygon[i] to polygon[(i + 1) % n]
+//
+// Complexity: every function here takes O(1) time, except twiceSignedArea and pointInPolygon, which take O(n).
 
 
 export const LEFT = "left", RIGHT = "right", ON = "on";
@@ -62,7 +64,10 @@ export function segmentIntersection(p, q, r, s) {
   return {x, y, t};
 }
 
-/** Twice the signed area of the room: > 0 if its vertices are counterclockwise. */
+/**
+ * Twice the signed area of the room: > 0 if its vertices are counterclockwise.
+ * O(n) (shoelace formula). Optimal: every corner has to be read.
+ */
 export function twiceSignedArea(room) {
   let sum = 0;
   for (let i = 0; i < room.length; i++) {
@@ -78,7 +83,11 @@ export function onSegment(a, b, p) {
          Math.min(a.y, b.y) <= p.y && p.y <= Math.max(a.y, b.y);
 }
 
-/** Is point p inside (or on the boundary of) the polygon? */
+/**
+ * Is point p inside (or on the boundary of) the polygon?
+ * O(n): one crossing test per wall, optimal for a single point. After O(n log n) preprocessing (point location,
+ * de Berg et al. 2008, ch. 6) each point would take O(log n); not worth it for rooms with tens of corners.
+ */
 export function pointInPolygon(p, polygon) {
   const n = polygon.length
   let cross = 0

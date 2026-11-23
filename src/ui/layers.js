@@ -1,5 +1,5 @@
 // The layers a canvas can show, in drawing order. Each layer only calls geometry functions and draws the result.
-import { COLORS, regions, segment, dot, dots, ring } from './draw.js';
+import { COLORS, levelColor, linkColor, regions, segment, dot, dots, ring } from './draw.js';
 import { reflectPoint } from '../geometry/primitives.js';
 import { rayCast } from '../geometry/raycast.js';
 import { reflexVertices } from '../geometry/room.js';
@@ -7,11 +7,23 @@ import { visibilityPolygon } from '../geometry/visibility.js';
 import { windows } from '../geometry/pockets.js';
 import { mirrorRegion, visibleMirrorPart } from '../geometry/mirror.js';
 import { kLinkRegion, kLinkMirrorRegion } from '../geometry/klink.js';
-import { gridPoints, isVisible, isVisibleThroughMirror } from '../verify/bruteforce.js';
+import { gridPoints, isVisible, isVisibleThroughMirror, linkDistances } from '../verify/bruteforce.js';
 
 const GRID_STEP = 3;
+const LINK_GRID_STEP = 12;
 
 export const wall = (s, i) => [s.room[i], s.room[(i + 1) % s.room.length]];
+
+// The k-link levels take tens of milliseconds, so the last result is kept until the room, sensor, mirror or k change.
+let cache = { key: null, levels: [] };
+function cachedLevels(s) {
+  const key = JSON.stringify([s.room, s.q, s.hasMirror && s.mirrorIndex]);
+  if (cache.key !== key || cache.levels.length < s.k) {
+    const levels = s.hasMirror ? kLinkMirrorRegion(s.room, s.mirrorIndex, s.q, s.k) : kLinkRegion(s.room, s.q, s.k);
+    cache = { key, levels, ell: levels.ell };
+  }
+  return { levels: cache.levels.slice(0, s.k), ell: cache.ell };
+}
 
 export const LAYERS = [
   {
@@ -20,10 +32,12 @@ export const LAYERS = [
     todo: 'the region seen with at most k links',
     needsSensor: true,
     draw(p, s) {
-      const region = s.hasMirror
-        ? kLinkMirrorRegion(s.room, s.mirrorIndex, s.q, s.k)
-        : kLinkRegion(s.room, s.q, s.k);
-      regions(p, region, COLORS.klink);
+      const { levels, ell } = cachedLevels(s);
+      if (s.hasMirror) s.notes.push(`Link distance from q to the mirror: ℓ = ${ell}. The mirror is used at levels ${ell} and ${ell + 1}.`);
+      for (let i = levels.length; i >= 1; i--) regions(p, levels[i - 1], levelColor(i));
+      for (const part of levels.flat()) {
+        for (const [a, b] of windows(s.room, part)) segment(p, a, b, COLORS.window, 1, true);
+      }
     },
   },
   {
@@ -65,6 +79,20 @@ export const LAYERS = [
       const size = Math.min(4, GRID_STEP * 0.7);
       dots(p, hidden, COLORS.gridHidden, size);
       dots(p, seen, COLORS.gridSeen, size);
+    },
+  },
+  {
+    key: 'linkGrid',
+    label: 'Check with brute force',
+    todo: 'the brute-force link distance',
+    needsSensor: true,
+    draw(p, s) {
+      const points = gridPoints(s.room, LINK_GRID_STEP);
+      const distance = linkDistances(s.room, s.q, points, s.k, s.hasMirror ? s.mirrorIndex : null);
+      for (let level = 1; level <= s.k; level++) {
+        dots(p, points.filter((_, i) => distance[i] === level), linkColor(level), 4);
+      }
+      dots(p, points.filter((_, i) => !(distance[i] <= s.k)), COLORS.gridHidden, 4);
     },
   },
   {

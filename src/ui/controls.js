@@ -12,7 +12,9 @@ const LEGEND = [
   { key: 'mirrorGrid', label: 'seen directly (brute force)', shape: 'dot small', color: COLORS.gridSeen },
   { key: 'mirrorGrid', label: 'seen through the mirror (brute force)', shape: 'dot small', color: COLORS.gridMirror },
   { key: 'mirrorGrid', label: 'hidden (brute force)', shape: 'dot small', color: COLORS.gridHidden },
-  { key: 'klink', label: 'k-link region', shape: 'box', color: COLORS.klink },
+  { key: 'klink', label: 'k-link region (darker = fewer links)', shape: 'box', color: COLORS.klink },
+  { key: 'linkGrid', label: 'link distance (brute force, darker = fewer links)', shape: 'dot small', color: [8, 80, 65] },
+  { key: 'linkGrid', label: 'not reached within k links (brute force)', shape: 'dot small', color: COLORS.gridHidden },
   { key: 'windows', label: 'windows', shape: 'bar', color: COLORS.window },
 ];
 

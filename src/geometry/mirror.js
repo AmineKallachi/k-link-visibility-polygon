@@ -1,8 +1,8 @@
 // Blocks 7 and 8: visibility with the mirror edge.
 // The mirror is given by its edge index: edge i goes from polygon[i] to polygon[i + 1].
-import polygonClipping from 'polygon-clipping';
 import { reflectPoint } from './primitives.js';
 import { visibilityPolygon } from './visibility.js';
+import { unionOfVisibleRegions } from './pockets.js';
 
 // AI GENERATED: visibleMirrorPart, mirrorRegion, mirrorVisibilityPolygon and their helpers.
 // The mirror image q′ does not have whole-number coordinates, so the part seen through the mirror is
@@ -19,6 +19,7 @@ const along = (from, dir, t) => ({ x: from.x + t * dir.x, y: from.y + t * dir.y 
  * The part of the mirror that q sees directly, as [m1, m2] in the direction of the wall, or null.
  * q sees one connected piece of any wall, so it is read off V_P(q): the run of its points that lie on the mirror.
  * @param {Point[]} direct  V_P(q) from visibilityPolygon (its points record their wall or corner).
+ * O(m) for the m points of V_P(q).
  */
 export function visibleMirrorPart(polygon, mirrorIndex, direct) {
   const n = polygon.length;
@@ -39,6 +40,9 @@ export function visibleMirrorPart(polygon, mirrorIndex, direct) {
  * Method: rays from q′ through both ends of that part and through every corner beyond it, in order of angle,
  * each one only counted from the mirror on (the ray casting of de Berg et al. 2008, §15.2).
  * O(n²): n rays, each tested against n walls.
+ * The paper (Theorem 2) takes O(n): it builds the helper polygon P′ and runs a linear-time visibility algorithm
+ * from q′. Not used: the corners of P′ are not whole numbers and P′ is degenerate by construction (q′ is one of its
+ * corners); see DESIGN-NOTES, 20 Nov. An exact sweep from q′ would give O(n log n).
  * @returns {Point[]} a polygon (counterclockwise), or [] if q does not see the mirror.
  */
 export function mirrorRegion(polygon, mirrorIndex, q, direct = visibilityPolygon(polygon, q)) {
@@ -145,20 +149,14 @@ export function mirrorRegion(polygon, mirrorIndex, q, direct = visibilityPolygon
 
 /**
  * Block 7: V_{P,e}(q), everything q sees directly or by way of the mirror (Kouhestani et al. 2010, Theorem 2).
- * The union of V_P(q) and mirrorRegion, computed with polygon-clipping instead of the paper's linear-time merge.
+ * The union of V_P(q) and mirrorRegion, with unionOfVisibleRegions (Clipper) instead of the paper's linear-time
+ * merge (Lemma 1); the result keeps the corner/wall labels, so windows() works on it.
+ * O(n log n) for V_P(q) + O(n²) for mirrorRegion + the union. The paper: O(n) (Theorem 2 with Lemma 1).
  * @returns {Point[][]} a list of polygons (outer boundaries, counterclockwise); usually just one.
  */
-export function mirrorVisibilityPolygon(polygon, mirrorIndex, q) {
-  const direct = visibilityPolygon(polygon, q);
+export function mirrorVisibilityPolygon(polygon, mirrorIndex, q, direct = visibilityPolygon(polygon, q)) {
   const reflected = mirrorRegion(polygon, mirrorIndex, q, direct);
-  if (reflected.length < 3) return [direct];
-  // polygon-clipping can fail on points that differ only by rounding noise, so both regions are snapped
-  // to a grid of 10⁻⁶ first. Whole-number coordinates do not change.
-  const snap = (v) => Math.round(v * 1e6) / 1e6;
-  const asRing = (points) => [points.map((p) => [snap(p.x), snap(p.y)])];
-  return polygonClipping
-    .union(asRing(direct), asRing(reflected))
-    .map(([outer]) => outer.slice(0, -1).map(([x, y]) => ({ x, y })));
+  return reflected.length < 3 ? [direct] : unionOfVisibleRegions(polygon, [direct, reflected]);
 }
 
 /**

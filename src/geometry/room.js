@@ -8,6 +8,8 @@ const same = (a, b) => a.x === b.x && a.y === b.y;
  * Turns clicked points into a valid room: whole-number coordinates, no two consecutive points equal,
  * counterclockwise, at least 3 corners and no walls that cross or touch.
  * Throws an Error with a short reason (shown to the reader) if that is not possible.
+ * O(n²): checkWalls compares every pair of walls. A sweep line decides whether any two walls cross in O(n log n)
+ * (Shamos & Hoey 1976; de Berg et al. 2008, ch. 2); not needed for tens of corners, checked once per change.
  */
 export function makeRoom(points) {
   const room = [];
@@ -49,7 +51,7 @@ function foldsBack(a, b, c) {
   return orientation(a, b, c) === ON && (onSegment(a, b, c) || onSegment(b, c, a));
 }
 
-/** Indices of the reflex corners (inside angle larger than 180°) of a counterclockwise room. */
+/** Indices of the reflex corners (inside angle larger than 180°) of a counterclockwise room. O(n), optimal. */
 export function reflexVertices(room) {
   const n = room.length;
   const reflexvertices = []

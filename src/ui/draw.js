@@ -18,12 +18,22 @@ export const COLORS = {
   mirror: [58, 110, 165],
   mirrorView: [58, 110, 165, 75],
   mirrorImage: [58, 110, 165],
-  klink: [246, 228, 175, 220],
+  klink: [242, 210, 122],
   gridSeen: [46, 125, 90],
   gridHidden: [165, 173, 181],
   gridMirror: [40, 90, 160],
   drawing: [58, 110, 165],
 };
+
+const mix = (a, b, t) => a.map((v, i) => Math.round(v + t * (b[i] - v)));
+
+/** Shade of the region seen with exactly `level` links: the yellow of Figure 2 for 1 link, lighter for every next level. */
+const LEVELS = [[242, 210, 122], [246, 224, 160], [249, 234, 190], [251, 241, 211], [252, 246, 226], [253, 249, 236]];
+export const levelColor = (level) => LEVELS[Math.min(level, LEVELS.length) - 1];
+
+/** Colour of a brute-force grid point at link distance `level`: dark teal for 1 link, lighter after that. */
+const LINKS = [[8, 80, 65], [29, 158, 117], [93, 202, 165], [159, 225, 203]];
+export const linkColor = (level) => LINKS[Math.min(level, LINKS.length) - 1];
 
 export const css = (color) => {
   const [r, g = r, b = r, a = 255] = [color].flat();

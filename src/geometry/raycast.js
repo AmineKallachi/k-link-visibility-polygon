@@ -33,6 +33,10 @@ function pointsOutside(u, v, w, far) {
  * the ray as a long segment with whole-number coordinates, and the case where the ray
  * runs along a wall (which the book leaves out on p. 327).
  *
+ * Complexity: O(n) per ray, every wall is tested. A ray-shooting structure answers a ray in O(log n) after O(n)
+ * preprocessing (Hershberger & Suri 1995), but it needs a triangulation of the room first; with tens of walls
+ * O(n) per ray is fast enough.
+ *
  * @param {Point[]} room  Vertices counterclockwise, whole-number coordinates, no two consecutive vertices equal.
  * @param {Point} q  Start point, inside the room or on its boundary, whole-number coordinates.
  * @param {Point} via  A point the ray passes through, different from q, whole-number coordinates.
