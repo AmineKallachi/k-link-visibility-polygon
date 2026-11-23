@@ -6,9 +6,6 @@
   --near: #f2d27a;
   --mirror: #3a6ea5;
   --sensor: #b33a3a;
-  --todo-ink: #8a5300;
-  --todo-paper: #fdf3dc;
-  --todo-rule: #e6c77e;
   --serif: 'Literata Variable', Georgia, serif;
   --sans: 'Archivo Variable', system-ui, sans-serif;
 }
@@ -162,26 +159,6 @@ sub {
   margin-bottom: 3px;
 }
 
-.todo {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 8px;
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.6;
-  vertical-align: 0.2em;
-  color: var(--todo-ink);
-  background: var(--todo-paper);
-  border: 1px solid var(--todo-rule);
-  border-radius: 3px;
-}
-
-p .todo {
-  margin-left: 0;
-  vertical-align: 0.05em;
-}
-
 figure {
   margin: 30px 0 34px;
 }
@@ -285,35 +262,6 @@ figure.wide figcaption {
   height: auto !important;
 }
 
-.canvas .todo-note {
-  position: absolute;
-  top: 7px;
-  left: 8px;
-  right: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: baseline;
-  z-index: 1;
-  pointer-events: none;
-  font-family: var(--sans);
-  font-size: 12.5px;
-  line-height: 1.5;
-}
-
-.todo-note p {
-  margin: 0;
-  padding: 1px 8px;
-  color: var(--todo-ink);
-  background: var(--todo-paper);
-  border: 1px solid var(--todo-rule);
-  border-radius: 3px;
-}
-
-.todo-note b {
-  font-weight: 600;
-}
-
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -408,10 +356,5 @@ footer {
     width: 100%;
     left: 0;
     transform: none;
-  }
-
-  .canvas .todo-note {
-    position: static;
-    padding: 6px 6px 0;
   }
 }

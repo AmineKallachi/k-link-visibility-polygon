@@ -11,7 +11,7 @@ const scene = new Scene('comb');
 // What each canvas can do. A feature that is not listed is not available.
 // Controls: edit (draw the room, move corners), sensor (drag the sensor).
 // Mirror and layers: true = on with a checkbox, false = off with a checkbox, 'always' = on without a checkbox.
-// Layers: visible, windows, mirrorView, klink, laser, fan, reflex, grid, mirrorGrid, linkGrid.
+// Layers: visible, windows, mirrorView, klink, grid, mirrorGrid, linkGrid.
 const CANVASES = {
   direct: {
     features: { edit: true, sensor: true, visible: 'always', grid: false },

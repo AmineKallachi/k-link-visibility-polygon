@@ -2,8 +2,8 @@ import p5 from 'p5';
 import { COLORS, polygon, segment, dot, ring } from './draw.js';
 import { LAYERS, wall } from './layers.js';
 import { buildControls } from './controls.js';
-import { explain, isTodo } from './errors.js';
-import { pointInPolygon } from '../geometry/primitives.js';
+import { explain } from './errors.js';
+import { pointInPolygon, orientation, onSegment, ON } from '../geometry/primitives.js';
 
 p5.disableFriendlyErrors = true;
 
@@ -28,7 +28,6 @@ export class RoomCanvas {
 
   get room() { return this.scene.room; }
   get q() { return this.scene.q; }
-  get aim() { return this.scene.aim; }
   get mirrorIndex() { return this.scene.mirrorIndex; }
   get hasMirror() { return Boolean(this.on.mirror); }
 
@@ -82,14 +81,12 @@ export class RoomCanvas {
 
   draw(p) {
     this.notes = [this.scene.roomNote, this.drawing && this.drawError].filter(Boolean);
-    this.todos = [];
     p.background(COLORS.background);
     p.translate(0, HEIGHT);
     p.scale(1, -1);
     if (this.drawing) this.drawChain(p);
     else this.drawScene(p);
     this.controls.showNotes(this.notes);
-    this.controls.showTodos(this.todos);
   }
 
   drawScene(p) {
@@ -105,8 +102,7 @@ export class RoomCanvas {
       try {
         layer.draw(p, this);
       } catch (error) {
-        if (isTodo(error) && layer.todo) this.todos.push(layer.todo);
-        else this.notes.push(`${layer.label}: ${explain(error)}`);
+        this.notes.push(`${layer.label}: ${explain(error)}`);
       }
       p.pop();
     }
@@ -117,12 +113,18 @@ export class RoomCanvas {
     polygon(p, this.room);
     if (this.hasMirror) segment(p, ...wall(this, this.mirrorIndex), COLORS.mirror, 6);
     if (this.has('edit')) for (const v of this.room) dot(p, v, COLORS.corner, 7);
-    if (this.on.laser) ring(p, this.aim, COLORS.aim, 14);
     if (this.has('sensor')) dot(p, this.q, sensorReady ? COLORS.sensor : COLORS.sensorOutside, 14);
   }
 
+  /** The regions need the sensor strictly inside the room: not outside it and not on a wall. */
   sensorInside() {
     try {
+      const n = this.room.length;
+      const onWall = this.room.some((a, i) => orientation(a, this.room[(i + 1) % n], this.q) === ON && onSegment(a, this.room[(i + 1) % n], this.q));
+      if (onWall) {
+        this.notes.push('The sensor is on a wall. Move it into the room.');
+        return false;
+      }
       if (pointInPolygon(this.q, this.room)) return true;
       this.notes.push('The sensor is outside the room.');
       return false;
@@ -155,7 +157,6 @@ export class RoomCanvas {
 
   pick(m) {
     if (this.has('sensor') && near(m, this.q)) return { kind: 'sensor' };
-    if (this.on.laser && near(m, this.aim)) return { kind: 'aim' };
     const index = this.has('edit') ? this.room.findIndex((v) => near(m, v)) : -1;
     return index >= 0 ? { kind: 'corner', index } : null;
   }
@@ -165,7 +166,6 @@ export class RoomCanvas {
     const m = this.mouse(p);
     const { kind, index } = this.dragging;
     if (kind === 'sensor') this.scene.moveSensor(m);
-    if (kind === 'aim') this.scene.moveAim({ ...(this.room.find((v) => near(m, v)) ?? m) });
     if (kind === 'corner') this.scene.moveCorner(index, m);
   }
 

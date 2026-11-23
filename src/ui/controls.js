@@ -21,10 +21,8 @@ const LEGEND = [
 export function buildControls(host, canvas) {
   const bar = element('div', 'controls');
   const canvasHost = element('div', 'canvas');
-  const todoNote = element('div', 'todo-note');
   const legend = element('div', 'legend');
   const status = element('div', 'status');
-  canvasHost.append(todoNote);
   host.append(bar, canvasHost, legend, status);
 
   const legendItems = [];
@@ -55,7 +53,6 @@ export function buildControls(host, canvas) {
   }
 
   let shownNotes = '';
-  let shownTodos = '';
   return {
     canvasHost,
     showNotes(notes) {
@@ -63,17 +60,6 @@ export function buildControls(host, canvas) {
       if (notes.join('\n') === shownNotes) return;
       shownNotes = notes.join('\n');
       status.replaceChildren(...notes.map((note) => element('div', note.includes('error:') ? 'error' : '', note)));
-    },
-    showTodos(todos) {
-      if (todos.join('\n') === shownTodos) return;
-      shownTodos = todos.join('\n');
-      todoNote.replaceChildren(
-        ...todos.map((todo) => {
-          const line = element('p');
-          line.append(element('b', '', 'To do:'), ` ${todo}`);
-          return line;
-        }),
-      );
     },
   };
 }

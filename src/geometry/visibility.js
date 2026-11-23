@@ -5,7 +5,7 @@ import { unionOfVisibleRegions } from './pockets.js';
 
 const FAR = 10000;
 
-//AI GENERATED, TODO
+// AI GENERATED: visibilityPolygon and its helpers.
 
 const sign = (a, b, p) => Math.sign(calculateDeterminant(a, b, p));
 const dist2 = (q, p) => (p.x - q.x) ** 2 + (p.y - q.y) ** 2;
@@ -48,6 +48,20 @@ function endsOnRayFromRight(q, w, [a, b]) {
 }
 
 /**
+ * The corners of a group (all on one ray from q, nearest first) that lie strictly between where the ray meets wall
+ * `from` and where it meets wall `to`, in the order from `from` to `to`. Exact: only the corners and walls are
+ * tested, never the computed meeting points.
+ */
+function cornersBetween(q, group, from, to) {
+  const fromIsNear = inFront(from, to, q);
+  const [near, far] = fromIsNear ? [from, to] : [to, from];
+  const beyond = ([a, b], v) => sign(a, b, v) !== 0 && sign(a, b, v) !== sign(a, b, q);
+  const before = ([a, b], v) => sign(a, b, v) !== 0 && sign(a, b, v) === sign(a, b, q);
+  const between = group.filter(({ v }) => beyond(near, v) && before(far, v));
+  return fromIsNear ? between : between.reverse();
+}
+
+/**
  * Block 3: V_P(q), the region of polygon P visible from point q (q strictly inside P).
  * Rotational sweep: de Berg et al. 2008, §15.2, pp. 326–329, applied to exercise 3.14 (p. 61); Asano 1985.
  * O(n log n): sorting the corners, and each wall is inserted and removed once in a balanced tree.
@@ -56,9 +70,14 @@ function endsOnRayFromRight(q, w, [a, b]) {
  * method and easier to get right. The extra log n comes from sorting and does not matter for tens of corners.
  * Returns a polygon (counterclockwise). Each point records the corner (`vertex`) or wall (`wall`) it lies on,
  * so a window (an edge that is not on a wall) can be found without testing computed points again.
+ * Corners that lie on a window, in line with q, are kept as points of the polygon: where the ray runs along a
+ * wall, that part of the edge is then recognised as wall and not as window.
+ * Throws if q is not strictly inside the room (outside, on a wall or on a corner).
  */
 export function visibilityPolygon(polygon, q) {
   const n = polygon.length;
+  const onWall = polygon.some((a, i) => orientation(a, polygon[(i + 1) % n], q) === ON && onSegment(a, polygon[(i + 1) % n], q));
+  if (onWall || !pointInPolygon(q, polygon)) throw new Error('visibilityPolygon: the sensor must lie strictly inside the room');
   const walls = polygon.map((a, i) => Object.assign([a, polygon[(i + 1) % n]], { index: i, next: (i + 1) % n }));
   const corners = polygon
     .map((v, i) => ({ v, i, angle: Math.atan2(v.y - q.y, v.x - q.x), d: dist2(q, v) }))
@@ -92,6 +111,7 @@ export function visibilityPolygon(polygon, q) {
 
     if (before !== after) {
       add(meet(q, w, before));
+      for (const { v, i } of cornersBetween(q, group, before, after)) add({ x: v.x, y: v.y, vertex: i });
       add(meet(q, w, after));
     }
   }

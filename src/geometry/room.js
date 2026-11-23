@@ -59,7 +59,7 @@ export function reflexVertices(room) {
     const previous = room[(i-1 + n) % n];
     const next = room[(i+1) % n];
     if (orientation(previous, room[i], next) === RIGHT)
-      reflexvertices.push(room[i])
+      reflexvertices.push(i)
   }
   return reflexvertices;
 

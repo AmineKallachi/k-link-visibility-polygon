@@ -106,7 +106,7 @@ export function pointInPolygon(p, polygon) {
   else return true  
 }
 
-/** Mirror image of point p across the line through a and b (used for q' in block 7). */
+/** Mirror image of point p across the line through a and b (drawing q′ on Figure 3, and the mirror brute force). */
 export function reflectPoint(p, a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;

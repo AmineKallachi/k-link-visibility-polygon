@@ -1,9 +1,9 @@
 // Block 13: verification.
 // Idea: sample a grid of points inside P and decide for each one, by brute force,
 // whether it is in the region. Then compare with the output of the real algorithm.
-// polygon-clipping (already installed) can compute areas of union/difference
-// to measure how far two regions are apart.
 // These checks are slow on purpose: simple, and independent of the algorithms they check.
+// isVisibleThroughMirror casts rays towards the computed bounce point r (floating point), so near region edges it is
+// not exact; the tests skip points within 0.5 px of an edge.
 
 import { orientation, pointInPolygon, RIGHT, reflectPoint, segmentsIntersect, segmentIntersection } from '../geometry/primitives.js';
 import { rayCast } from '../geometry/raycast.js';

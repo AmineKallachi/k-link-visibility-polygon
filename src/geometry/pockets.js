@@ -1,4 +1,4 @@
-// Blocks 2, 4 and 6: windows, pockets and union of visible regions.
+// Windows of a visible region, and the union of visible regions.
 import ClipperLib from 'clipper-lib';
 
 /**
@@ -35,19 +35,13 @@ function shareAWall(A, B) {
 
 
 
-/**
- * Block 4: the pocket behind a window = the part of P on the other side of the window.
- * Mahdavi et al. 2011, §2 (a window can bend, Fig. 2).
- * Not needed by kLinkRegion: what a point on a window sees beyond its region always lies in that
- * window's pocket (the argument of Lemma 3), so clipping it to the pocket changes nothing.
- */
-export function pocket(polygon, window) {
-  throw new Error('TODO block 4: pocket');
-}
+// No function computes the pocket behind a window (Mahdavi et al. 2011, §2): kLinkRegion does not need it, because
+// what a point on a window sees beyond its region always lies in that window's pocket (the argument of Lemma 3).
 
 /**
  * Block 6: the union of visible regions inside polygon P.
- * The paper merges two regions in linear time by walking along the walls (Kouhestani et al. 2010, Lemma 1).
+ * Kouhestani et al. 2010 merge two visibility polygons in linear time by walking along the walls (their Lemma 1;
+ * not the Lemma 1 of Mahdavi et al. 2011).
  * Here the Clipper library does it instead: it works on whole numbers internally (coordinates × SCALE),
  * so it does not break on rounding noise.
  * Complexity: Clipper uses a sweep line (Vatti 1992), roughly O((N + I) log N) for N points and I crossings;

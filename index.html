@@ -25,7 +25,9 @@
           Place a sensor <var>q</var> inside a room, modelled as a simple polygon <var>P</var> with
           <var>n</var> corners. A point <var>p</var> of the room is visible from <var>q</var> when the open
           segment <var>qp</var> lies in the interior of <var>P</var>; the paper uses this clear visibility, so a
-          line of sight may not touch the boundary. All visible points together form the visibility polygon
+          line of sight may not touch the boundary. Our figures let a line of sight touch the boundary (graze a
+          corner or run along a wall); the two definitions differ only on lines, which have no area. All visible
+          points together form the visibility polygon
           <var>V</var>(<var>q</var>), written <var>V</var><sub><var>P</var></sub>(<var>q</var>) when the room
           matters: the part of the room that a camera at <var>q</var> films, or that a lamp at <var>q</var>
           lights. Computing it is a classic problem of computational geometry, and it can be done in linear
@@ -93,8 +95,7 @@
         <p>
           The sections below follow this construction step by step. Lemmas, theorems and algorithms keep their
           numbers from the paper. Figures 2 to 4 share one room and one sensor: draw a new room in any of them,
-          or drag a corner or the sensor, and every figure follows. Parts that are not implemented yet are
-          marked <span class="todo">To do</span>.
+          or drag a corner or the sensor, and every figure follows.
         </p>
       </section>
 
@@ -130,7 +131,7 @@
       </section>
 
       <section>
-        <h2><span class="number">3</span>Seeing through a mirror <span class="todo">To do</span></h2>
+        <h2><span class="number">3</span>Seeing through a mirror</h2>
         <p>
           One wall <var>e</var> is now a mirror. Two points <var>x</var> and <var>y</var> see each other through
           <var>e</var> when some point <var>r</var> of <var>e</var> sees both, and the segments <var>xr</var> and
@@ -174,7 +175,7 @@
       </section>
 
       <section>
-        <h2><span class="number">4</span>k-link visibility with a mirror <span class="todo">To do</span></h2>
+        <h2><span class="number">4</span>k-link visibility with a mirror</h2>
         <p>
           The paper first builds <var>k</var>-link visibility without the mirror, then handles two links with
           the mirror, and finally combines both for any <var>k</var>.
@@ -207,7 +208,8 @@
           <div data-canvas="klink"></div>
           <figcaption>
             <b>Figure 4.</b> The region seen with at most <var>k</var> links. Without the mirror this is
-            Lemma 7; with the mirror it is Algorithm 4.2 below.
+            Lemma 7; with the mirror it is Algorithm 4.2 below. What a window sees is approximated from points
+            every 2 px along it, so region edges can be off by about 1.5 px.
           </figcaption>
         </figure>
 

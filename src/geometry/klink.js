@@ -71,12 +71,14 @@ const seenDirectly = (polygon, object, step) =>
  * Block 10: ℓ, the link distance from the sensor to the mirror: the first level V^ℓ_P(q) that touches the mirror.
  * Mahdavi et al. 2011, §4.1 (link distance between an object and a segment).
  * Returns { ell, levels } with the ordinary levels V^1 .. V^ℓ, so they do not have to be computed twice.
- * Complexity: ℓ ordinary levels (see kLinkRegion). The paper: O(n) with Suri's linear-time link distance (1986).
+ * Stops after maxLevel levels: then ell is Infinity, meaning ℓ > maxLevel.
+ * Complexity: min(ℓ, maxLevel) ordinary levels (see kLinkRegion). The paper: O(n) with Suri's linear-time link
+ * distance (1986).
  */
-export function linkDistanceToMirror(polygon, mirrorIndex, q, step = 2) {
+export function linkDistanceToMirror(polygon, mirrorIndex, q, step = 2, maxLevel = polygon.length + 1) {
   const levels = [[visibilityPolygon(polygon, q)]];
   while (!touchesMirror(polygon, mirrorIndex, levels[levels.length - 1])) {
-    if (levels.length > polygon.length) return { ell: Infinity, levels };
+    if (levels.length >= maxLevel) return { ell: Infinity, levels };
     levels.push(growLevel(polygon, levels[levels.length - 1], step));
   }
   return { ell: levels.length, levels };
@@ -89,8 +91,8 @@ export function linkDistanceToMirror(polygon, mirrorIndex, q, step = 2) {
  * Difference with the paper: each window point may use the whole mirror, not only the part e_i inside its pocket.
  * Every point added is still reached with one more link, so this can only add correct points.
  * Mahdavi et al. 2011, §3, Lemmas 3–5, Algorithm 3, Theorem 6.
- * Complexity: one level of sampling with a mirror region per sample point, O(s · n²) for s samples, plus the union.
- * The paper: O(n + m) (Theorem 6).
+ * Complexity: one level of sampling, with a visibility polygon and a mirror region per sample point, both
+ * O(n log n): O(s · n log n) for s samples, plus the union. The paper: O(n + m) (Theorem 6).
  */
 export function twoLinkMirrorRegion(polygon, mirrorIndex, object, { windowsOf = 'mirror', step = 2 } = {}) {
   const first = seenWithMirror(polygon, mirrorIndex, object, step);
@@ -104,12 +106,16 @@ export function twoLinkMirrorRegion(polygon, mirrorIndex, object, { windowsOf = 
  * 1. ℓ = link distance to the mirror. 2. Levels below ℓ: ordinary k-link visibility.
  * 3. Level ℓ: V_{P,e}(Q) with Q = V^(ℓ−1)_P(q) (Q = q if ℓ = 1). Level ℓ + 1: Algorithm 3 on Q.
  * Further levels: ordinary growth through the windows, without the mirror (Lemma 8).
- * @returns {Point[][][]} [V^1, ..., V^k] with the mirror; the array also has a property `ell` (ℓ).
- * Complexity: the levels of kLinkRegion, plus two levels with a mirror region per sample point.
- * The paper: O(n + m) for every k (Theorem 9).
+ * @returns {Point[][][]} [V^1, ..., V^k] with the mirror; the array also has a property `ell` (ℓ, or Infinity
+ *   when ℓ > k: then the mirror is not used).
+ * Complexity: k levels, each O(s · n log n) for the s sample points on its windows, plus the union; at levels ℓ and
+ * ℓ + 1 every sample point also gets a mirror region, also O(n log n). So O(k · s · n log n) plus the unions, where
+ * s grows with the length of the windows in pixels (see segmentVisibilityPolygon); with the windows-of-V_P variant
+ * one ordinary level more. The paper: O(n + m) for every k (Theorem 9); see kLinkRegion for why we grow level by
+ * level instead.
  */
 export function kLinkMirrorRegion(polygon, mirrorIndex, q, k, { windowsOf = 'mirror', step = 2 } = {}) {
-  const { ell, levels: direct } = linkDistanceToMirror(polygon, mirrorIndex, q, step);
+  const { ell, levels: direct } = linkDistanceToMirror(polygon, mirrorIndex, q, step, k);
   const levels = direct.slice(0, Math.min(k, ell - 1));
   if (k >= ell) {
     const object = ell === 1 ? q : direct[ell - 2];
@@ -123,6 +129,7 @@ export function kLinkMirrorRegion(polygon, mirrorIndex, q, k, { windowsOf = 'mir
 /**
  * Check for Lemma 8: the mirror used at every level instead of only at levels ℓ and ℓ + 1.
  * If the paper is right, this gives the same regions as kLinkMirrorRegion.
+ * Complexity: also O(k · s · n log n) plus the unions, but with a mirror region per sample point at every level.
  */
 export function kLinkMirrorEveryLevel(polygon, mirrorIndex, q, k, step = 2) {
   const levels = [mirrorVisibilityPolygon(polygon, mirrorIndex, q)];
