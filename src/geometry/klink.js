@@ -13,8 +13,9 @@ import { mirrorRegion, mirrorVisibilityPolygon, visibleMirrorPart } from './mirr
  * Complexity: per level O(s · n log n) for the s sample points on its windows, plus the union; k levels in total.
  * s grows with the total length of the windows in pixels. The paper computes V^k in O(n) for every k (Lemma 7):
  * the window partition handles each pocket once, with linear-time visibility from a segment (Guibas et al. 1987)
- * and link distances (Suri 1986). Not used: those need a triangulated room and shortest-path trees, too much before
- * the deadline. So our time grows with k, theirs does not.
+ * and link distances (Suri 1986). Not implemented: these are subroutines from earlier work, not the paper's
+ * contribution, and growing level by level gives the same regions. So this running time grows with k; the paper's
+ * does not.
  * @returns {Point[][][]} [V^1, ..., V^k], each a list of polygons (counterclockwise)
  */
 // AI GENERATED: kLinkRegion and growLevel.
@@ -111,8 +112,8 @@ export function twoLinkMirrorRegion(polygon, mirrorIndex, object, { windowsOf = 
  * Complexity: k levels, each O(s · n log n) for the s sample points on its windows, plus the union; at levels ℓ and
  * ℓ + 1 every sample point also gets a mirror region, also O(n log n). So O(k · s · n log n) plus the unions, where
  * s grows with the length of the windows in pixels (see segmentVisibilityPolygon); with the windows-of-V_P variant
- * one ordinary level more. The paper: O(n + m) for every k (Theorem 9); see kLinkRegion for why we grow level by
- * level instead.
+ * one ordinary level more. The paper: O(n + m) for every k (Theorem 9); see kLinkRegion for why the levels are
+ * grown one by one.
  */
 export function kLinkMirrorRegion(polygon, mirrorIndex, q, k, { windowsOf = 'mirror', step = 2 } = {}) {
   const { ell, levels: direct } = linkDistanceToMirror(polygon, mirrorIndex, q, step, k);

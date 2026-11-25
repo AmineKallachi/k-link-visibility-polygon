@@ -8,6 +8,8 @@ import { kLinkRegion, kLinkMirrorRegion } from '../geometry/klink.js';
 import { gridPoints, isVisible, isVisibleThroughMirror, linkDistances } from '../verify/bruteforce.js';
 
 const GRID_STEP = 3;
+// Coarser than GRID_STEP on purpose: linkDistances compares every unreached point with every point of the previous
+// level, O(k · g² · n) for g points. Comb room, k = 4: step 12 takes 0.1 s, step 3 (as the other figures) 16 s.
 const LINK_GRID_STEP = 12;
 
 export const wall = (s, i) => [s.room[i], s.room[(i + 1) % s.room.length]];
@@ -89,7 +91,7 @@ export const LAYERS = [
       const points = gridPoints(s.room, LINK_GRID_STEP);
       const distance = linkDistances(s.room, s.q, points, s.k, s.hasMirror ? s.mirrorIndex : null);
       for (let level = 1; level <= s.k; level++) {
-        dots(p, points.filter((_, i) => distance[i] === level), linkColor(level), 4);
+        dots(p, points.filter((_, i) => distance[i] === level), linkColor(level), 6);
       }
       dots(p, points.filter((_, i) => !(distance[i] <= s.k)), COLORS.gridHidden, 4);
     },

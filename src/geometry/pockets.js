@@ -46,8 +46,8 @@ function shareAWall(A, B) {
  * so it does not break on rounding noise.
  * Complexity: Clipper uses a sweep line (Vatti 1992), roughly O((N + I) log N) for N points and I crossings;
  * merging in pairs takes about log₂ r rounds for r regions. The paper's Lemma 1 merges two visibility polygons in
- * O(n) by walking along the walls in order (Order Property). Not used: it needs exact labels on every point, also on
- * crossings inside the room, and k-link merges hundreds of sampled regions, not two.
+ * O(n) by walking along the walls in order (Order Property). Not implemented: it needs exact labels on every point,
+ * also on crossings inside the room, and k-link merges hundreds of sampled regions, not two.
  * The result gets the same labels as visibilityPolygon: `vertex: i` for a corner of P, `wall: i` for a point
  * inside wall i, and no label for a point inside the room. So windows() works on it.
  * @param {Point[][]} regions  polygons inside P

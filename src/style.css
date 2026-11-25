@@ -51,19 +51,6 @@ h1 {
   margin: 0 0 22px;
 }
 
-.byline {
-  font-family: var(--sans);
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--muted);
-  margin: 0;
-}
-
-.author {
-  font-weight: 600;
-  color: var(--ink);
-}
-
 h2 {
   font-size: 1.4rem;
   font-weight: 600;
@@ -120,43 +107,111 @@ sub {
   vertical-align: -0.15em;
 }
 
+.meta {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.meta p {
+  margin: 0;
+}
+
+.statement b {
+  font-weight: 600;
+}
+
+pre.code {
+  margin: 4px 0 22px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  background: #f5f6f7;
+  border-radius: 4px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+pre.code b {
+  font-weight: 700;
+}
+
+pre.code .c {
+  color: var(--muted);
+}
+
+/* Table of contents: a sidebar, or a list under the title on phones. */
+nav.toc {
+  max-width: 680px;
+  margin: 24px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  font-family: var(--sans);
+  font-size: 15px;
+}
+
+nav.toc a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+nav.toc a:hover,
+nav.toc a.current {
+  color: var(--ink);
+}
+
 .statement {
   padding-left: 16px;
   border-left: 2px solid var(--rule);
 }
 
-.statement b,
-.algorithm b {
-  font-weight: 600;
+a {
+  color: inherit;
+  text-decoration-color: var(--muted);
+  text-underline-offset: 3px;
 }
 
-.algorithm {
+a:hover {
+  text-decoration-color: var(--ink);
+}
+
+.statement:target {
+  background: #fbf3d9;
+}
+
+ul.groups {
+  margin: 0 0 18px;
+  padding-left: 1.3em;
+}
+
+ul.groups li {
+  margin-bottom: 8px;
+}
+
+table {
+  width: 100%;
   margin: 4px 0 22px;
-  padding: 10px 0 6px;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-  font-size: 16.5px;
-  line-height: 1.6;
+  border-collapse: collapse;
+  font-size: 15.5px;
+  line-height: 1.5;
 }
 
-.algorithm p {
-  margin: 0 0 6px;
-  padding-bottom: 6px;
+th,
+td {
+  padding: 7px 10px 7px 0;
   border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
 }
 
-.algorithm ol {
-  margin: 0 0 4px;
-  padding-left: 1.8em;
-}
-
-.algorithm ol ol {
-  list-style: lower-alpha;
-  padding-left: 1.6em;
-}
-
-.algorithm li {
-  margin-bottom: 3px;
+th {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom-color: var(--ink);
 }
 
 figure {
@@ -356,5 +411,51 @@ footer {
     width: 100%;
     left: 0;
     transform: none;
+  }
+
+  figure.wide figcaption {
+    margin-left: 0;
+  }
+}
+
+/* Sidebar layout: the text is centred, or pushed right when the window is too narrow for both. */
+@media (min-width: 820px) {
+  header,
+  main,
+  footer {
+    margin-left: max(240px, calc(50% - 340px));
+    margin-right: auto;
+  }
+
+  nav.toc {
+    position: fixed;
+    top: 72px;
+    left: max(24px, calc(50% - 580px));
+    box-sizing: border-box;
+    width: 200px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    margin: 0;
+    padding: 2px 20px 2px 0;
+    display: block;
+    text-align: right;
+    border-right: 3px solid #9aa3ab;
+    font-size: 16.5px;
+    line-height: 1.35;
+  }
+
+  nav.toc a {
+    display: block;
+    padding: 6px 0;
+  }
+
+  figure.wide {
+    width: min(900px, calc(100vw - max(264px, 50vw - 340px) - 40px));
+    left: 0;
+    transform: none;
+  }
+
+  figure.wide figcaption {
+    margin-left: 0;
   }
 }

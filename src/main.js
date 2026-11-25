@@ -14,7 +14,7 @@ const scene = new Scene('comb');
 // Layers: visible, windows, mirrorView, klink, grid, mirrorGrid, linkGrid.
 const CANVASES = {
   direct: {
-    features: { edit: true, sensor: true, visible: 'always', grid: false },
+    features: { edit: true, sensor: true, visible: 'always', windows: false, grid: false },
   },
   mirror: {
     features: { edit: true, sensor: true, mirror: 'always', mirrorView: true, visible: false, mirrorGrid: false },
@@ -26,4 +26,21 @@ const CANVASES = {
 
 for (const host of document.querySelectorAll('[data-canvas]')) {
   new RoomCanvas(host, scene, CANVASES[host.dataset.canvas]);
+}
+
+// Sidebar: highlight the section that is being read.
+const tocLinks = new Map([...document.querySelectorAll('nav.toc a')].map((a) => [a.hash.slice(1), a]));
+const reading = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      for (const a of tocLinks.values()) a.classList.remove('current');
+      tocLinks.get(entry.target.id)?.classList.add('current');
+    }
+  },
+  { rootMargin: '0px 0px -70% 0px' },
+);
+for (const id of tocLinks.keys()) {
+  const section = document.getElementById(id);
+  if (section) reading.observe(section);
 }

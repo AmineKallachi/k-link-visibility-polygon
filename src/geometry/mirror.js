@@ -66,7 +66,8 @@ function denominator(q) {
  * points too: a mirror end, or the reflection of the corner that casts the shadow ending at m1 or m2.
  * O(n log n): sorting the corners in the wedge, and each wall is inserted and removed once in a balanced tree.
  * The paper (Theorem 2) takes O(n): it builds the helper polygon P′ and runs a linear-time visibility algorithm
- * from q′; the log n comes from the sweep, as for visibilityPolygon. See DESIGN-NOTES, 20 Nov, for why not P′.
+ * from q′; the log n comes from the sweep, as for visibilityPolygon. Not P′: its corners are not whole numbers and
+ * q′ lies on its boundary; one sweep from q′ is simpler and exact on integer input.
  * @returns {Point[]} a polygon (counterclockwise), or [] if q does not see the mirror.
  */
 export function mirrorRegion(polygon, mirrorIndex, q, direct = visibilityPolygon(polygon, q)) {

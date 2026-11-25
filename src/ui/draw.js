@@ -25,9 +25,12 @@ const mix = (a, b, t) => a.map((v, i) => Math.round(v + t * (b[i] - v)));
 const LEVELS = [[242, 210, 122], [246, 224, 160], [249, 234, 190], [251, 241, 211], [252, 246, 226], [253, 249, 236]];
 export const levelColor = (level) => LEVELS[Math.min(level, LEVELS.length) - 1];
 
-/** Colour of a brute-force grid point at link distance `level`: dark teal for 1 link, lighter after that. */
-const LINKS = [[8, 80, 65], [29, 158, 117], [93, 202, 165], [159, 225, 203]];
-export const linkColor = (level) => LINKS[Math.min(level, LINKS.length) - 1];
+/**
+ * Colour of a brute-force grid point at link distance `level`: a clearly different colour per level, so the levels
+ * stand out on the coarse grid of Figure 4 (teal, raspberry, purple, amber, ...). No blue: blue is the mirror.
+ */
+export const LINK_COLORS = [[8, 80, 65], [196, 30, 90], [111, 63, 183], [194, 96, 0], [60, 60, 60], [120, 113, 108]];
+export const linkColor = (level) => LINK_COLORS[Math.min(level, LINK_COLORS.length) - 1];
 
 export const css = (color) => {
   const [r, g = r, b = r, a = 255] = [color].flat();

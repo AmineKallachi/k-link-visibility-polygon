@@ -1,5 +1,5 @@
 import { LAYERS } from './layers.js';
-import { COLORS, css } from './draw.js';
+import { COLORS, LINK_COLORS, css } from './draw.js';
 
 const LEGEND = [
   { key: 'sensor', label: 'sensor q', shape: 'dot', color: COLORS.sensor },
@@ -13,7 +13,9 @@ const LEGEND = [
   { key: 'mirrorGrid', label: 'seen through the mirror (brute force)', shape: 'dot small', color: COLORS.gridMirror },
   { key: 'mirrorGrid', label: 'hidden (brute force)', shape: 'dot small', color: COLORS.gridHidden },
   { key: 'klink', label: 'k-link region (darker = fewer links)', shape: 'box', color: COLORS.klink },
-  { key: 'linkGrid', label: 'link distance (brute force, darker = fewer links)', shape: 'dot small', color: [8, 80, 65] },
+  ...LINK_COLORS.map((color, i) => ({
+    key: 'linkGrid', level: i + 1, label: `${i + 1} link${i ? 's' : ''} (brute force)`, shape: 'dot small', color,
+  })),
   { key: 'linkGrid', label: 'not reached within k links (brute force)', shape: 'dot small', color: COLORS.gridHidden },
   { key: 'windows', label: 'windows', shape: 'bar', color: COLORS.window },
 ];
@@ -26,12 +28,12 @@ export function buildControls(host, canvas) {
   host.append(bar, canvasHost, legend, status);
 
   const legendItems = [];
-  for (const { key, label, shape, color } of LEGEND) {
+  for (const { key, level, label, shape, color } of LEGEND) {
     if (!canvas.has(key)) continue;
     const item = element('span', shape, label);
     item.style.setProperty('--swatch', css(color));
     legend.append(item);
-    legendItems.push({ key, item });
+    legendItems.push({ key, level, item });
   }
 
   const update = (change) => {
@@ -56,7 +58,7 @@ export function buildControls(host, canvas) {
   return {
     canvasHost,
     showNotes(notes) {
-      for (const { key, item } of legendItems) item.hidden = !canvas.on[key];
+      for (const { key, level, item } of legendItems) item.hidden = !canvas.on[key] || level > canvas.k;
       if (notes.join('\n') === shownNotes) return;
       shownNotes = notes.join('\n');
       status.replaceChildren(...notes.map((note) => element('div', note.includes('error:') ? 'error' : '', note)));

@@ -65,9 +65,10 @@ function cornersBetween(q, group, from, to) {
  * Block 3: V_P(q), the region of polygon P visible from point q (q strictly inside P).
  * Rotational sweep: de Berg et al. 2008, §15.2, pp. 326–329, applied to exercise 3.14 (p. 61); Asano 1985.
  * O(n log n): sorting the corners, and each wall is inserted and removed once in a balanced tree.
- * The paper uses a linear-time algorithm, O(n) (Lee 1983, corrected by Joe & Simpson 1987). Not used: it walks
- * the boundary with a stack and has many special cases (Lee's first version was wrong); the sweep is the textbook
- * method and easier to get right. The extra log n comes from sorting and does not matter for tens of corners.
+ * The paper uses a linear-time algorithm, O(n) (Lee 1983, corrected by Joe & Simpson 1987). Not implemented: it is a
+ * subroutine from earlier work, not the paper's contribution, and the goal here is to illustrate the paper's
+ * algorithms, not to reach their optimal running time. The sweep is the textbook method and gives the same region;
+ * the extra log n comes from sorting.
  * Returns a polygon (counterclockwise). Each point records the corner (`vertex`) or wall (`wall`) it lies on,
  * so a window (an edge that is not on a wall) can be found without testing computed points again.
  * Corners that lie on a window, in line with q, are kept as points of the polygon: where the ray runs along a
@@ -129,8 +130,9 @@ export function visibilityPolygon(polygon, q) {
  * whole-number input and stays exact; the only approximation is the sampling itself.
  * Complexity: O(s · n log n) for the s = length / step sample points, plus the union (see unionOfVisibleRegions);
  * s depends on the length of the segment in pixels, not on n. Guibas et al. 1987 compute the exact region in O(n)
- * on a triangulated room, with shortest-path trees; too much to build and test before the deadline. In the tests
- * the sampled region differed from the exact one only within 1.5 px of its edges.
+ * on a triangulated room, with shortest-path trees. Not implemented: it is a subroutine from earlier work, not the
+ * paper's contribution, and sampling is enough to illustrate the paper's algorithms. In the tests the sampled
+ * region differed from the exact one only within 1.5 px of its edges.
  * @returns {Point[][]} the region as a list of polygons, counterclockwise
  */
 // AI GENERATED: segmentVisibilityPolygon, visibleFromSamples and their helpers.
