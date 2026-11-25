@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 // What all canvases share: the room, the sensor and the mirror wall.
 import { EXAMPLES } from './examples.js';
 import { makeRoom } from '../geometry/room.js';

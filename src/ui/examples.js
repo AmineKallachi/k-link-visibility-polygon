@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 // Example rooms, counterclockwise, y pointing up. Each one fits a 640 × 400 canvas.
 
 export const EXAMPLES = {

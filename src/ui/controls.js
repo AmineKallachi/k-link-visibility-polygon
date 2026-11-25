@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 import { LAYERS } from './layers.js';
 import { COLORS, LINK_COLORS, css } from './draw.js';
 

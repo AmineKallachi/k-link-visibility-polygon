@@ -7,7 +7,7 @@ Project: k-link visibility with a mirror (INFO-F420). Author: Amine Kallachi.
 - **Claude** (Anthropic), in a claude.ai Project ("Computational Geometry Project") that contains the papers. Through
   the Claude desktop app, Claude could read and write files in my project folder. It ran code and tests in its own
   workspace and searched the web for sources.
-- **Model:** Claude Opus 5.5, in every session.
+- **Model:** Claude Opus 5.5, in every session except the final check on 25 Nov, which ran on Claude Sonnet 5.5.
 - **Other AI tools:** none.
 
 ## How this journal is organised
@@ -225,3 +225,23 @@ Each entry covers the required items:
 **Corrected or rejected:** the design decisions were first worded as if the optimal versions were too much work, which I corrected; the design decisions table did not look professional and became prose per algorithm; the separate "Several mirrors" section was folded into the conclusion; the title "Seeing around corners" was replaced; text that was too dense or too scientific was rewritten; references to the paper in the explanation were reduced.
 
 **My decisions:** the goal of the implementation is to understand the paper's algorithms, not to reach their optimal complexity; order after the algorithm sections: conclusion (with several mirrors), design decisions, related work, lemmas and theorems, use of AI, references; design decisions as short prose per algorithm; a short "Use of AI" statement on the page; this journal public on GitHub, the conversation itself not; the key terms as their own section with an illustration; the relay point explained where it first appears; one section for the mirror and one link.
+
+**Final check** (Claude Sonnet 5.5; the fixes afterwards with Claude Opus 5.5)
+
+> "now verify EVERYTHING, make sure all sources are correct, everything exists, no contradictions, and then give me a final rating on the project. Take your time"
+
+**Responses:** the 16 references checked against publisher and index pages; the lemmas, theorems, algorithms and conclusion checked against the two papers; a fresh clone of the repository installed, tested and built; the page tested in a browser (the three canvases, dragging the sensor and corners, every mirror wall for k = 1 to 6, phone width); the running time measured (14–46 ms for rooms of 8 to 36 vertices); a list of wording problems and a rating of 8.5/10.
+
+**AI-written code**
+
+| What | Status |
+|---|---|
+| Page text: the sentence on Bungiu et al., the condition for reflecting the room (Section 4), sampling and rounding in the design decisions, a sentence on lines of sight that touch the boundary, the Figure 5 caption, the "Use of AI" statement, the author order of Penninger et al., the heading of Section 3 (now the same as its table of contents entry) | as-is |
+| An empty favicon in `index.html`, so the browser no longer reports a missing file | as-is |
+| `// AI GENERATED` markers on the page code (`src/main.js`, `src/ui/`, `src/style.css`), the tests, `onSegment` and `twiceSignedArea`; the README's "Use of AI" and building-block note; an unsupported claim removed from a comment in `visibility.js` | as-is |
+
+**Checked:** the 36 tests and the build after the fixes; the page in a browser.
+
+**Corrected or rejected:** Claude's design notes file was not added to the repository.
+
+**My decisions:** which of the proposed fixes to apply; no design notes file in the repository.

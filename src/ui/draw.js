@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 // Drawing helpers. All coordinates are in room coordinates (y up); the canvas is flipped once in roomCanvas.js.
 
 export const COLORS = {

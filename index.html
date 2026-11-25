@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>k-Link Visibility with a Reflective Edge</title>
+    <link rel="icon" href="data:," />
   </head>
   <body>
     <header>
@@ -141,7 +142,7 @@
       </section>
 
       <section id="no-mirror">
-        <h2><span class="number">3</span>Link visibility without a mirror</h2>
+        <h2><span class="number">3</span>Links without a mirror</h2>
         <p>
           Before adding the mirror, it helps to see how <var>k</var>-link visibility grows without one. The windows
           are the key.
@@ -183,10 +184,10 @@
           <var>k</var>-link visibility in the doubled room would then solve the problem.
         </p>
         <p>
-          Unfortunately, this only works if the whole room lies on one side of the mirror's line. If part of the
-          room sticks out beyond it, the copy overlaps the room itself. The doubled shape is then no longer a simple
-          polygon, which the fast visibility algorithms need. With more links there is a second problem. A relay
-          point found in the copy stands for a real point in the room, and the next link from there can stay on its
+          Unfortunately, this is only safe if the whole room lies on one side of the mirror's line. If part of the
+          room sticks out beyond it, the copy can overlap the room itself. The doubled shape is then no longer a
+          simple polygon, which the fast visibility algorithms need. With more links there is a second problem.
+          A relay point found in the copy stands for a real point in the room, and the next link from there can stay on its
           side or switch. Every new link then means merging four overlapping regions, and there is no known way to
           do that in linear time (Mahdavi et al. 2011).
         </p>
@@ -332,7 +333,7 @@
           <figcaption>
             <b>Figure 5.</b> The region <var>q</var> reaches with at most <var>k</var> links. Darker means fewer
             links. With <i>Mirror</i> on, the region follows Algorithm 4.2. The brute-force layer colours each grid
-            point by its link distance.
+            point by its link distance. Visibility from the windows is sampled (Section 8).
           </figcaption>
         </figure>
       </section>
@@ -365,6 +366,12 @@
           simpler method that computes the same region, or a close approximation of it. The optimal versions would
           not help to understand the paper, so I did not consider them necessary.
         </p>
+        <p>
+          One definition differs slightly. The paper counts a point as seen only if the line of sight stays strictly
+          inside the room. My code, like the brute-force check, also accepts a line of sight that touches the
+          boundary, for example by grazing a corner. This only decides whether some points on the boundary of a
+          region count as seen; the computed polygons are the same.
+        </p>
 
         <h3>One link with a mirror</h3>
         <p>
@@ -390,11 +397,12 @@
         </p>
         <p>
           The paper computes weak visibility from a window exactly, in linear time (Guibas et al. 1987). I
-          approximate it: I take points every 2 px along the window and merge their visibility polygons. This is
-          the only approximate step, and more samples cannot make it exact. Near a shadow edge through two reflex
-          vertices, a point sees only a thin sliver of the window, and the sliver gets thinner the closer the point
-          is to the edge. The error only goes one way: points close to a shadow edge may be missed, but no point is
-          ever added by mistake.
+          approximate it: I take points about every 2 px along the window and merge their visibility polygons.
+          Apart from rounding coordinates to a fraction of a pixel, this is the only approximate step, and more
+          samples cannot make it exact. Near a shadow edge through two reflex vertices, a point sees only a thin
+          sliver of the window, and the sliver gets thinner the closer the point is to the edge. The sampling error
+          only goes one way: points close to a shadow edge may be missed, but sampling never adds a point that the
+          window does not see.
         </p>
 
         <h3>Any number of links (Algorithm 4.2)</h3>
@@ -429,13 +437,15 @@
           the visibility polygon of a point, and Joe and Simpson (1987) corrected his algorithm. Guibas et al.
           (1987) compute weak visibility from a segment. Suri (1986) computes minimum-link paths, which lead to the
           window partition surveyed by Maheshwari et al. (2000). The paper also uses Bose et al. (2002) for the fact
-          that a segment crosses at most two windows, and Langetepe et al. (2010) for visibility from a polygon.
+          that a segment crosses at most two windows, and Penninger et al. (2010) for visibility from a polygon.
         </p>
         <p>
           For the implementation, my main source is de Berg et al. (2008). It gives the rotational sweep (also
           Asano 1985) and the basic geometric tests, with O'Rourke (1998) as a second reference. Bungiu et al.
-          (2014) show that simple visibility algorithms often beat the linear-time ones in practice. The exact signs
-          in the mirror sweep use Shewchuk's robust predicates (1997), and the unions use Clipper, an
+          (2014) compare visibility algorithms on real-world inputs. Their triangular expansion, quadratic in the
+          worst case, is the fastest, even faster than the linear-time algorithm. The rotational sweep is the slowest
+          on large inputs, but for rooms with a few dozen vertices this does not matter. The exact signs in the
+          mirror sweep use Shewchuk's robust predicates (1997), and the unions use Clipper, an
           implementation of Vatti's clipping algorithm (1992).
         </p>
       </section>
@@ -514,7 +524,7 @@
       <section id="ai">
         <h2>Use of AI</h2>
         <p>
-          AI assistants were used during the development of the code and the interactive figures, and for drafting
+          AI assistants were used during the development of the code and the figures, and for drafting
           and editing this text. I reviewed all of it and take responsibility for the content. Full documentation is
           provided in the AI journal submitted with this report.
         </p>
@@ -558,11 +568,6 @@
             Geometry (EuroCG)</cite>, 209–212, 2010.
           </li>
           <li>
-            E. Langetepe, R. Penninger and J. Tulke. Computing the visibility area between two simple polygons
-            in linear time. <cite>Proceedings of the 26th European Workshop on Computational Geometry
-            (EuroCG)</cite>, 237–240, 2010.
-          </li>
-          <li>
             D. T. Lee. Visibility of a simple polygon. <cite>Computer Vision, Graphics, and Image
             Processing</cite> 22, 207–221, 1983.
           </li>
@@ -578,6 +583,11 @@
           </li>
           <li>
             J. O'Rourke. <cite>Computational Geometry in C</cite>, 2nd edition. Cambridge University Press, 1998.
+          </li>
+          <li>
+            R. Penninger, E. Langetepe and J. Tulke. Computing the visibility area between two simple polygons
+            in linear time. <cite>Proceedings of the 26th European Workshop on Computational Geometry
+            (EuroCG)</cite>, 237–240, 2010.
           </li>
           <li>
             J. R. Shewchuk. Adaptive precision floating-point arithmetic and fast robust geometric predicates.

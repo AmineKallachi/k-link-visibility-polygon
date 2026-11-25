@@ -64,6 +64,7 @@ export function segmentIntersection(p, q, r, s) {
   return {x, y, t};
 }
 
+// AI GENERATED: twiceSignedArea and onSegment (written as part of raycast.js, moved here).
 /**
  * Twice the signed area of the room: > 0 if its vertices are counterclockwise.
  * O(n) (shoelace formula). Optimal: every corner has to be read.

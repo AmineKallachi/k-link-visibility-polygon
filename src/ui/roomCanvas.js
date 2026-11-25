@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 import p5 from 'p5';
 import { COLORS, polygon, segment, dot, ring } from './draw.js';
 import { LAYERS, wall } from './layers.js';

@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 // The layers a canvas can show, in drawing order. Each layer only calls geometry functions and draws the result.
 import { COLORS, levelColor, linkColor, regions, segment, dot, dots, ring } from './draw.js';
 import { reflectPoint } from '../geometry/primitives.js';

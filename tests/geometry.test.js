@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 import { describe, it, expect } from 'vitest';
 import { makeRoom, reflexVertices } from '../src/geometry/room.js';
 import { rayCast } from '../src/geometry/raycast.js';

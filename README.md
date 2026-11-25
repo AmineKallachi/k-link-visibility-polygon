@@ -31,7 +31,7 @@ Live page: https://aminekallachi.github.io/k-link-visibility-polygon/
 | Tests | `tests/*.test.js` |
 
 Pockets (block 4) and visibility from a segment with the mirror (block 8) are not needed as separate functions;
-`klink.js` explains why.
+`pockets.js` and `mirror.js` explain why.
 
 ## Conventions
 
@@ -50,10 +50,10 @@ A new layer goes in `src/ui/layers.js`: a key, a label, and a `draw` function th
 
 ## Use of AI
 
-AI assistants (Claude, by Anthropic) were used during the development of the code and the interactive figures, and
-for drafting and editing the text of the page. Functions written by AI are marked `// AI GENERATED` in the source
-files. What was asked, what was used, how it was checked and what I decided myself is documented in
-[AI-JOURNAL.md](AI-JOURNAL.md).
+AI assistants (Claude, by Anthropic) were used during the development of the code and the figures, and for
+drafting and editing the text of the page. In `src/` and `tests/`, code written by AI is marked `// AI GENERATED`,
+per function or for a whole file. What was asked, what was used, how it was checked and what I decided myself is
+documented in [AI-JOURNAL.md](AI-JOURNAL.md).
 
 ## Libraries
 

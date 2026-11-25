@@ -127,12 +127,12 @@ export function visibilityPolygon(polygon, q) {
  * The exact linear-time algorithm is Guibas et al. 1987. Here it is approximated: points every `step` units
  * along s each get their visibility polygon, and the union of those is the result.
  * Each sample point is rounded to 1/GRID unit and the room is scaled by GRID, so visibilityPolygon gets
- * whole-number input and stays exact; the only approximation is the sampling itself.
+ * whole-number input and stays exact; the only approximations are the sampling and this rounding.
  * Complexity: O(s · n log n) for the s = length / step sample points, plus the union (see unionOfVisibleRegions);
  * s depends on the length of the segment in pixels, not on n. Guibas et al. 1987 compute the exact region in O(n)
  * on a triangulated room, with shortest-path trees. Not implemented: it is a subroutine from earlier work, not the
- * paper's contribution, and sampling is enough to illustrate the paper's algorithms. In the tests the sampled
- * region differed from the exact one only within 1.5 px of its edges.
+ * paper's contribution, and sampling is enough to illustrate the paper's algorithms. The tests check that the
+ * k-link regions contain every grid point that the brute force reaches.
  * @returns {Point[][]} the region as a list of polygons, counterclockwise
  */
 // AI GENERATED: segmentVisibilityPolygon, visibleFromSamples and their helpers.

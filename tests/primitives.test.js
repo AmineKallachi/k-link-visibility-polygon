@@ -1,3 +1,4 @@
+// AI GENERATED: this whole file.
 import { describe, it, expect } from 'vitest';
 import {
   calculateDeterminant, orientation, segmentsIntersect, segmentIntersection, pointInPolygon, onSegment,
