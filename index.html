@@ -20,9 +20,9 @@
 
     <nav class="toc" aria-label="Contents">
       <a href="#introduction">Introduction</a>
-      <a href="#corners">Seeing around corners</a>
-      <a href="#mirror">Adding a mirror</a>
-      <a href="#one-link">One link</a>
+      <a href="#terms">Key terms</a>
+      <a href="#no-mirror">Links without a mirror</a>
+      <a href="#one-link">One link with a mirror</a>
       <a href="#two-links">Two links</a>
       <a href="#k-links">Any number of links</a>
       <a href="#conclusion">Conclusion</a>
@@ -37,17 +37,21 @@
       <section id="introduction">
         <h2><span class="number">1</span>Introduction</h2>
         <p>
-          A sensor <var>q</var> inside a simple polygon <var>P</var> sees every point it has a straight line of
-          sight to. Together these points form its <em>visibility polygon</em>. Now let the line of sight bend. A
-          point is <em><var>k</var>-link visible</em> from <var>q</var> if a polygonal path of at most
-          <var>k</var> segments, called <em>links</em>, connects them inside <var>P</var>: a message relayed
-          <var>k</var>&nbsp;−&nbsp;1 times, or a robot allowed <var>k</var>&nbsp;−&nbsp;1 turns.
+          Imagine a sensor, such as a camera, standing inside a room. It sees every point it can reach with a
+          straight line of sight. Walls block its view, so some parts of the room stay hidden.
         </p>
         <p>
-          Mahdavi, Mohades and Kouhestani (2011) add a twist: one edge <var>e</var> of <var>P</var> is a mirror. A
-          line of sight that hits it is reflected, angle in equal to angle out, and the reflection does not count as
-          a link. The question is which points of <var>P</var> the sensor reaches with at most <var>k</var> links
-          in that setting.
+          Now suppose the sensor can pass on what it sees. A relay picks up the signal and looks further, possibly
+          around a corner. A point is <em><var>k</var>-link visible</em> from the sensor if a path of at most
+          <var>k</var> straight segments, called <em>links</em>, connects them inside the room. With
+          <var>k</var> = 1 this is ordinary visibility. With <var>k</var> = 2 there is one relay in between, and so
+          on. You can also picture a robot that may turn at most <var>k</var>&nbsp;−&nbsp;1 times.
+        </p>
+        <p>
+          The paper by Mahdavi, Mohades and Kouhestani (2011) adds one more element: one wall of the room is a
+          mirror. When a line of sight hits the mirror, it bounces off, just like light. The bounce is free: it does
+          not count as an extra link. The question is which points the sensor can reach with at most <var>k</var>
+          links when this mirror is present.
         </p>
 
         <figure class="wide">
@@ -66,109 +70,143 @@
             </div>
           </div>
           <figcaption>
-            <b>Figure 1.</b> Dark yellow: reached with one link. Light yellow: two links. Hatched: not reached.
-            Red: a path with the allowed number of links; in (c) it is reflected by the mirror <var>e</var> and
-            still counts as one link.
+            <b>Figure 1.</b> One room and one sensor <var>q</var>. Dark yellow: reached with one link. Light
+            yellow: reached with two links. Hatched: not reached. Dashed: windows. The red path in (c) bounces off
+            the mirror <var>e</var> and still counts as one link.
           </figcaption>
         </figure>
 
         <p>
-          Figure 1 shows the effect in a polygon shaped like a corridor with three bays. With one link,
-          <var>q</var> sees its own bay and a strip of the corridor; with two, a relay in the corridor sees into the
-          other bays. With a mirror on the corridor floor, a single link already reaches into the middle bay, and
-          two links cover most of it.
+          In Figure 1, the room is a corridor with three bays. With one link, <var>q</var> only sees its own bay
+          and a strip of the corridor. With two links, a relay in the corridor can look into the other bays. With a
+          mirror on the corridor floor, a single link already reaches into the middle bay.
         </p>
         <p>
-          The paper computes this region in linear time, independently of <var>k</var>. That is optimal, since
-          reading the input takes as long. Its key observation is that the mirror, which seems to complicate every
-          level, only matters for two of the <var>k</var> links.
+          The paper shows how to compute this region in linear time, whatever the value of <var>k</var>. This is
+          optimal, since just reading the input takes linear time. The main insight is surprising: the mirror only
+          matters for two of the <var>k</var> links.
         </p>
         <p>
-          This page follows their algorithm step by step and describes my implementation of it. Figures 2 to 4 are
-          interactive and share one polygon, sensor and mirror: editing one updates all three.
+          This page explains their algorithm step by step and describes how I implemented it. Figures 3 to 5 are
+          interactive. They share the same room, sensor and mirror, so a change in one figure shows up in all of
+          them.
         </p>
       </section>
 
-      <section id="corners">
-        <h2><span class="number">2</span>Seeing around corners</h2>
+      <section id="terms">
+        <h2><span class="number">2</span>Key terms</h2>
         <p>
-          Without a mirror, <var>k</var>-link visibility grows level by level, and the shape of the visibility
-          polygon drives the growth (Figure 2). Only <em>reflex vertices</em>, with an interior angle above 180°,
-          can block the view. Where the line of sight grazes one, the visibility polygon ends in an edge that
-          crosses the interior of <var>P</var> instead of following its boundary: a <em>window</em>.
+          A few terms come back throughout the page. The room is a simple polygon <var>P</var> with <var>n</var>
+          vertices, and <var>q</var> is the sensor.
+        </p>
+        <dl class="terms">
+          <dt>Visibility polygon</dt>
+          <dd>All points of <var>P</var> that <var>q</var> sees directly. It is the yellow region in Figure 2(a).</dd>
+          <dt>Reflex vertex</dt>
+          <dd>A vertex with an interior angle larger than 180°. These corners stick into the room, and they are the
+            only ones that can block the view.</dd>
+          <dt>Window</dt>
+          <dd>An edge of the visibility polygon that is not part of a wall. It starts at a reflex vertex that the
+            line of sight just grazes, and crosses the open room.</dd>
+          <dt>Pocket</dt>
+          <dd>The part of the room behind a window. The sensor cannot see it, and the only way in is through the
+            window.</dd>
+          <dt>Link distance</dt>
+          <dd>The smallest number of links needed to reach a point from the sensor.</dd>
+          <dt>Weak visibility polygon</dt>
+          <dd>The region seen by a segment, such as a window: every point that sees at least one point of the
+            segment.</dd>
+        </dl>
+        <p>
+          The sensor does not have to be a point. It can also be a segment or a polygon with <var>m</var> vertices.
+          In that general case we call the sensor <var>O</var>.
+        </p>
+        <figure>
+          <div class="panels">
+            <div>
+              <img src="figures/terms-a.svg" alt="The visibility polygon of q, its two windows, the reflex vertices that cause them, and a pocket." />
+              <span>(a) one link</span>
+            </div>
+            <div>
+              <img src="figures/terms-b.svg" alt="A two-link path from q through a relay point, crossing window w into its pocket." />
+              <span>(b) two links</span>
+            </div>
+          </div>
+          <figcaption>
+            <b>Figure 2.</b> (a) The visibility polygon of <var>q</var>, its windows (dashed), the reflex vertices
+            that cause them, and the pockets (hatched). (b) A two-link path through a relay point. Light yellow: the
+            part of the weak visibility polygon of window <var>w</var> that <var>q</var> does not see directly.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="no-mirror">
+        <h2><span class="number">3</span>Link visibility without a mirror</h2>
+        <p>
+          Before adding the mirror, it helps to see how <var>k</var>-link visibility grows without one. The windows
+          are the key.
         </p>
         <figure>
           <div data-canvas="direct"></div>
           <figcaption>
-            <b>Figure 2.</b> The visibility polygon of <var>q</var>. The <i>Windows</i> layer shows its windows;
-            the brute-force layer tests every grid point separately.
+            <b>Figure 3.</b> The visibility polygon of <var>q</var>. The <i>Windows</i> layer shows its windows.
+            The brute-force layer checks every grid point separately.
           </figcaption>
         </figure>
         <p>
-          Each window splits <var>P</var> in two. The part <var>q</var> cannot see is the window's
-          <em>pocket</em>, and any path into a pocket has to cross its window. That is exactly what the second link
-          needs. It starts at a relay inside the visibility polygon, so to reach a point in a pocket it must cross
-          that pocket's window. The two-link region is therefore the visibility polygon plus, for every window, the
-          part of its pocket the window sees: its <em>weak visibility polygon</em>, the points that see at least one
-          point of the window.
+          A path with two links bends once. We call that bend the <em>relay point</em>: the first link goes from the
+          sensor to the relay point, and the second link continues from there (Figure 2b). The relay point has to
+          be somewhere the sensor sees, so it lies in the visibility polygon.
         </p>
         <p>
-          A window thus acts as a sensor in its own right, a segment instead of a point. This is why the algorithms
-          below take a general sensor <var>O</var>: a point, a segment, or a polygon with <var>m</var> vertices.
+          Now take a point in a pocket. To reach it, the second link has to enter the pocket, and the only way in is
+          through the window. So everything the second link adds is seen through a window: the two-link region is
+          the visibility polygon plus the weak visibility polygon of each window, inside its pocket. Figure 1(b)
+          shows the result.
         </p>
         <p>
-          The third link repeats the argument with the windows of the two-link region, and so on, one ring of
-          pockets per level. The smallest number of links that reaches a point is its <em>link distance</em>.
-          Windows and pockets are the whole toolkit; the rest of the page is about what a mirror does to them.
-        </p>
-      </section>
-
-      <section id="mirror">
-        <h2><span class="number">3</span>Adding a mirror</h2>
-        <p>
-          Now one edge <var>e</var> of <var>P</var> is a mirror. A line of sight that hits it is reflected and
-          continues. It can be reflected only once, because after the reflection it moves away from the line
-          through <var>e</var>.
-        </p>
-        <p>
-          The obvious approach is to reflect the polygon instead of the light. Glue a mirrored copy of
-          <var>P</var> onto <var>e</var>, and a reflected line of sight becomes a straight segment into the copy.
-          <var>k</var>-link visibility with a mirror then becomes ordinary <var>k</var>-link visibility in the
-          doubled polygon, folded back afterwards.
-        </p>
-        <p>
-          This works when <var>P</var> lies entirely on one side of the line through <var>e</var>, but not in
-          general. If part of <var>P</var> lies beyond that line, around a reflex vertex next to the mirror for
-          instance, the copy overlaps <var>P</var> itself, and the doubled polygon is no longer simple, which the
-          linear-time visibility algorithms require. Moreover, every relay found in the copy stands for a real point,
-          from which the next link may stay on its side or cross over. Each new level then means merging four
-          overlapping regions, and there is no known way to do that in linear time (Mahdavi et al. 2011).
-        </p>
-        <p>
-          The paper therefore uses the reflection only locally, at the mirror itself, starting with a single link.
+          The third link works the same way, through the windows of the two-link region. Each new link adds one
+          more ring of pockets. This is also why a window acts as a sensor of its own, and why the algorithms below
+          accept a segment as the sensor.
         </p>
       </section>
 
       <section id="one-link">
         <h2><span class="number">4</span>One link with a mirror</h2>
         <p>
-          With one link, <var>q</var> sees what it sees directly plus what it sees in the mirror. For the second
-          part, the classic trick from optics applies. A ray reflected at a point <var>r</var> of <var>e</var>
-          continues exactly like the straight line from <var>q</var>′, the reflection of <var>q</var> in
-          <var>e</var>, through <var>r</var>. So <var>q</var> sees in the mirror what <var>q</var>′ would see if
-          <var>e</var> were a window into <var>P</var>.
+          Now one edge <var>e</var> of the room is a mirror. A line of sight that hits it bounces off. It can bounce
+          only once, because after the bounce it moves away from the mirror.
         </p>
         <p>
-          Two restrictions make this exact. The reflection point must be visible from <var>q</var>, so
-          <var>q</var>′ only looks through the part of <var>e</var> on the boundary of <var>q</var>'s visibility
-          polygon. And the edges of <var>P</var> between <var>q</var>′ and the mirror do not exist in the mirror
-          world, so <var>q</var>′ looks through them.
+          A natural first idea is to reflect the room instead of the light. Glue a mirrored copy of the room onto
+          the mirror, and a bouncing line of sight becomes a straight line into the copy. Ordinary
+          <var>k</var>-link visibility in the doubled room would then solve the problem.
+        </p>
+        <p>
+          Unfortunately, this only works if the whole room lies on one side of the mirror's line. If part of the
+          room sticks out beyond it, the copy overlaps the room itself. The doubled shape is then no longer a simple
+          polygon, which the fast visibility algorithms need. With more links there is a second problem. A relay
+          point found in the copy stands for a real point in the room, and the next link from there can stay on its
+          side or switch. Every new link then means merging four overlapping regions, and there is no known way to
+          do that in linear time (Mahdavi et al. 2011).
+        </p>
+        <p>
+          So the reflection trick is only used locally, right at the mirror. With one link, <var>q</var> sees what
+          it sees directly, the visibility polygon, plus what it sees in the mirror. Reflect <var>q</var> in the
+          mirror to get a point <var>q</var>′. A ray from <var>q</var> that bounces at a point <var>r</var> of the
+          mirror continues exactly like the straight line from <var>q</var>′ through <var>r</var>. So <var>q</var>
+          sees in the mirror what <var>q</var>′ would see if the mirror were an open window into the room.
+        </p>
+        <p>
+          Two details matter. The bounce point must be visible from <var>q</var>, so <var>q</var>′ only looks
+          through the part of the mirror that <var>q</var> sees. And the walls between <var>q</var>′ and the mirror
+          do not exist in the mirror world, so they are ignored.
         </p>
         <figure>
           <div data-canvas="mirror"></div>
           <figcaption>
-            <b>Figure 3.</b> The region <var>q</var> sees in the mirror <var>e</var>, and the reflection
-            <var>q</var>′ of <var>q</var>. <i>Next mirror wall</i> moves the mirror to another edge.
+            <b>Figure 4.</b> The region <var>q</var> sees in the mirror <var>e</var>, and the reflected point
+            <var>q</var>′. <i>Next mirror wall</i> makes another edge the mirror.
           </figcaption>
         </figure>
 <pre class="code"><code><b>function</b> mirrorVisibility(P, e, q):
@@ -179,15 +217,17 @@
     T  = what q' sees through m           <span class="c">// ignoring edges in front of e</span>
     <b>return</b> union(V, T)</code></pre>
         <p>
-          Kouhestani et al. (2010) make every line of this linear. For what <var>q</var>′ sees, they build a helper
-          polygon, the part of <var>P</var> behind the mirror with <var>q</var>′ as an extra vertex, and run a
-          linear-time visibility algorithm in it. Both regions meet the boundary of <var>P</var> in the same order,
-          so one walk along the boundary computes their union (<a href="#k-lemma-1">Lemma 1</a>). One link with a
-          mirror thus takes <var>O</var>(<var>n</var>) time for a polygon with <var>n</var> vertices
+          Kouhestani et al. (2010) do every step in linear time. To find what <var>q</var>′ sees, they build a
+          helper polygon: the part of the room behind the mirror, with <var>q</var>′ as an extra vertex. A
+          linear-time visibility algorithm then runs inside it, and the two regions are merged by a single walk
+          along the boundary of the room (<a href="#k-lemma-1">Lemma 1</a>).
+        </p>
+        <p>
+          In total, one link with a mirror takes <var>O</var>(<var>n</var>) time
           (<a href="#k-theorem-2">Theorem 2</a>), also when the sensor is a segment
-          (<a href="#k-theorem-3">Theorem 3</a>). For a polygonal sensor it takes
-          <var>O</var>(<var>n</var> + <var>m</var>) (Mahdavi et al. 2011, <a href="#m-lemma-1">Lemma 1</a>). My
-          implementation uses a rotational sweep instead, at the cost of a log <var>n</var> factor; Section 8
+          (<a href="#k-theorem-3">Theorem 3</a>). A polygonal sensor with <var>m</var> vertices takes
+          <var>O</var>(<var>n</var> + <var>m</var>) time (Mahdavi et al. 2011, <a href="#m-lemma-1">Lemma 1</a>).
+          My implementation uses a rotational sweep instead, which costs an extra log <var>n</var> factor; Section 8
           explains why.
         </p>
       </section>
@@ -195,76 +235,82 @@
       <section id="two-links">
         <h2><span class="number">5</span>Two links</h2>
         <p>
-          A point reached with two links is reached through one relay <var>x</var>, and each link is either direct
-          or reflected. The paper sorts the resulting paths into four groups, writing the last link first, with
-          −<var>e</var> for a direct link and +<var>e</var> for a reflected one:
+          A point reached with two links goes through one relay point <var>x</var>. Each of the two links can be
+          direct or can bounce off the mirror. That gives four kinds of paths. Following the paper, we write
+          −<var>e</var> for a direct link and +<var>e</var> for a link that bounces, with the last link first:
         </p>
         <ul class="groups">
-          <li>{−<var>e</var>, −<var>e</var>}: both links direct, as in Section 2;</li>
-          <li>{−<var>e</var>, +<var>e</var>}: the first link reflected, the second direct;</li>
-          <li>{+<var>e</var>, −<var>e</var>}: the first link direct, the second reflected;</li>
-          <li>{+<var>e</var>, +<var>e</var>}: both links reflected.</li>
+          <li>{−<var>e</var>, −<var>e</var>}: both links are direct, as in Section 3;</li>
+          <li>{−<var>e</var>, +<var>e</var>}: the first link bounces, the second is direct;</li>
+          <li>{+<var>e</var>, −<var>e</var>}: the first link is direct, the second bounces;</li>
+          <li>{+<var>e</var>, +<var>e</var>}: both links bounce.</li>
         </ul>
         <p>
-          Computing the groups separately is where the difficulty lies. As soon as the second link is reflected,
-          every candidate relay has its own reflection, so there is no single <var>q</var>′ to look from. And the
-          groups overlap heavily, so they would still have to be merged afterwards, the same problem that defeats
-          unfolding.
+          Computing these four groups one by one is hard. When the second link bounces, every possible relay point
+          has its own reflection, so there is no single <var>q</var>′ to work with. The groups also overlap a lot,
+          so they would still need to be merged afterwards.
         </p>
         <p>
-          The paper avoids the groups and returns to pockets. Consider the windows of the one-link region with the
-          mirror. Every new point lies in the pocket of some window <var>w</var>, and its last link crosses
-          <var>w</var>. If the pocket contains no part of the mirror, the link cannot be reflected after crossing
-          <var>w</var>, so the point lies in the weak visibility polygon of <var>w</var>
-          (<a href="#m-lemma-3">Lemma 3</a>). If the pocket does contain part of the mirror, the link may still be
-          reflected there: the point is seen from <var>w</var> directly or via that part of <var>e</var>. That is
-          the one-link problem of Section 4 inside the pocket, with <var>w</var> as the sensor
-          (<a href="#m-lemma-4">Lemma 4</a>).
+          We can avoid the groups altogether by going back to pockets. Start from the one-link region with the
+          mirror and look at its windows. Every new point lies in the pocket of some window <var>w</var>, and its
+          last link has to cross <var>w</var>. There are two cases:
         </p>
+        <ul class="groups">
+          <li>The pocket contains no part of the mirror. Then the link cannot bounce after crossing <var>w</var>,
+            so the point is simply seen from <var>w</var> (<a href="#m-lemma-3">Lemma 3</a>).</li>
+          <li>The pocket contains part of the mirror. Then the link can still bounce there, so the point is seen
+            from <var>w</var> either directly or through that piece of mirror. This is the one-link problem of
+            Section 4 again, inside the pocket and with <var>w</var> as the sensor
+            (<a href="#m-lemma-4">Lemma 4</a>).</li>
+        </ul>
         <p>
-          Since <var>e</var> is a single segment, it intersects at most two windows
-          (<a href="#m-lemma-2">Lemma 2</a>), so at most two pockets involve the mirror at all. The one-link region
-          together with what each window sees in its pocket is exactly the two-link region; the paper verifies this
-          group by group (<a href="#m-lemma-5">Lemma 5</a>).
+          The mirror is a single segment, so it crosses at most two windows (<a href="#m-lemma-2">Lemma 2</a>).
+          This means that at most two pockets need the mirror at all. Putting all pockets together gives exactly
+          the two-link region. <a href="#m-lemma-5">Lemma 5</a> checks this for
+          each of the four groups.
         </p>
-<pre class="code"><code><b>function</b> twoLinks(P, e, O):           <span class="c">// Algorithm 3</span>
-    V = mirrorVisibility(P, e, O)     <span class="c">// one link</span>
+<pre class="code"><code><b>function</b> twoLinks(P, e, O):                          <span class="c">// Algorithm 3</span>
+    V = mirrorVisibility(P, e, O)                     <span class="c">// one link</span>
     <b>for each</b> window w <b>of</b> V:
         pocket = part of P behind w
-        m = part of e inside pocket   <span class="c">// empty for all but two windows</span>
+        m = part of e inside pocket                   <span class="c">// empty for all but two windows</span>
         V = union(V, mirrorVisibility(pocket, m, w))
     <b>return</b> V</code></pre>
         <p>
-          Each pocket costs time linear in its size, and pockets share only vertices, so the total is
-          <var>O</var>(<var>n</var> + <var>m</var>) (<a href="#m-theorem-6">Theorem 6</a>). One discrepancy: the
-          printed Algorithm 3 iterates over the windows of the visibility polygon without the mirror, while the
-          lemmas use the windows of the region with the mirror. I follow the lemmas; Section 8 explains why.
+          Each pocket takes time linear in its size, and the pockets only share vertices. So the total time is
+          <var>O</var>(<var>n</var> + <var>m</var>) (<a href="#m-theorem-6">Theorem 6</a>).
+        </p>
+        <p>
+          One detail does not match. The printed Algorithm 3 loops over the windows of the visibility polygon
+          without the mirror, while the lemmas use the windows of the region with the mirror. I follow the lemmas;
+          Section 8 explains why.
         </p>
       </section>
 
       <section id="k-links">
         <h2><span class="number">6</span>Any number of links</h2>
         <p>
-          Without a mirror, the level-by-level growth of Section 2 can be done for all levels at once. The
-          <em>window partition</em> divides <var>P</var> into regions of equal link distance in
+          Without a mirror, the ring-by-ring growth of Section 3 can be done for all levels at once. The
+          <em>window partition</em> splits the room into regions of equal link distance, in
           <var>O</var>(<var>n</var> + <var>m</var>) time (<a href="#m-lemma-7">Lemma 7</a>; Suri 1986).
         </p>
         <p>
-          With a mirror, let <var>ℓ</var> be the link distance from <var>O</var> to <var>e</var>, the number of
-          links needed to reach the mirror at all. The levels then fall into three phases:
+          With a mirror, let <var>ℓ</var> be the link distance from the sensor to the mirror: the number of links
+          needed to reach it at all. The levels then fall into three phases:
         </p>
         <ul class="groups">
-          <li>below <var>ℓ</var> links the mirror is out of reach: ordinary link visibility;</li>
-          <li>at <var>ℓ</var> links the last link can be reflected: Section 4, with everything reached in
-            <var>ℓ</var>&nbsp;−&nbsp;1 links as the sensor;</li>
-          <li>at <var>ℓ</var>&nbsp;+&nbsp;1 links the last two links can be reflected: Section 5, with the same sensor.</li>
+          <li>Below <var>ℓ</var> links, the mirror cannot be reached. This is ordinary link visibility.</li>
+          <li>At <var>ℓ</var> links, the last link can bounce. This is the one-link case of Section 4, starting
+            from everything reached with <var>ℓ</var>&nbsp;−&nbsp;1 links.</li>
+          <li>At <var>ℓ</var>&nbsp;+&nbsp;1 links, the last two links can bounce. This is the two-link case of
+            Section 5, from the same start.</li>
         </ul>
         <p>
-          From level <var>ℓ</var>&nbsp;+&nbsp;2 on, the mirror adds nothing. With <var>ℓ</var> links some point of
-          <var>e</var> is reached, and one more link along <var>e</var> reaches all of it. After <var>ℓ</var>&nbsp;+&nbsp;1
-          links every possible reflection point is therefore already reached, and a reflected link could just as
-          well start at its reflection point and continue straight (<a href="#m-lemma-8">Lemma 8</a>). The remaining
-          levels are ordinary link visibility inside the pockets.
+          After that, the mirror adds nothing new. With <var>ℓ</var> links, some point of the mirror is reached.
+          One more link along the mirror reaches all of it. So after <var>ℓ</var>&nbsp;+&nbsp;1 links, every
+          possible bounce point has already been reached. A link that bounces could just as well start at its
+          bounce point and go straight (<a href="#m-lemma-8">Lemma 8</a>). From then on, it is ordinary link
+          visibility again, inside the pockets.
         </p>
 <pre class="code"><code><b>function</b> kLinks(P, e, O, k):                   <span class="c">// Algorithm 4.2</span>
     ℓ = linkDistance(O, e)
@@ -276,16 +322,17 @@
         R = union(R, kLinksNoMirror(pocket(w), w, k - ℓ - 1))
     <b>return</b> R</code></pre>
         <p>
-          Every step is linear and the pockets share only vertices, so the whole algorithm runs in
-          <var>O</var>(<var>n</var> + <var>m</var>) time for every <var>k</var> (<a href="#m-theorem-9">Theorem
-          9</a>). Figure 4 shows the result for the shared polygon; the line below it gives <var>ℓ</var> and the
-          levels at which the mirror is used.
+          Every step takes linear time, and the pockets only share vertices. So the whole algorithm runs in
+          <var>O</var>(<var>n</var> + <var>m</var>) time, for any <var>k</var> (<a href="#m-theorem-9">Theorem
+          9</a>). Figure 5 shows the result for the shared room. The line below the figure gives <var>ℓ</var> and
+          the levels where the mirror is used.
         </p>
         <figure>
           <div data-canvas="klink"></div>
           <figcaption>
-            <b>Figure 4.</b> The region <var>q</var> reaches with at most <var>k</var> links, darker for fewer
-            links, with or without the mirror. The brute-force layer colours each grid point by its link distance.
+            <b>Figure 5.</b> The region <var>q</var> reaches with at most <var>k</var> links. Darker means fewer
+            links. With <i>Mirror</i> on, the region follows Algorithm 4.2. The brute-force layer colours each grid
+            point by its link distance.
           </figcaption>
         </figure>
       </section>
@@ -293,95 +340,102 @@
       <section id="conclusion">
         <h2><span class="number">7</span>Conclusion</h2>
         <p>
-          A mirror seems to make link visibility much harder, but Mahdavi et al. show that it does not: reasoning
-          about windows and pockets instead of kinds of paths confines the mirror to two levels, and the rest is
-          ordinary link visibility. Implementing the algorithm revealed one discrepancy, the windows used in
-          Algorithm 3 (Section 8).
+          At first sight, a mirror seems to make link visibility much harder. Mahdavi et al. show that it does not.
+          By reasoning about windows and pockets instead of kinds of paths, they limit the effect of the mirror to
+          two levels. Everything else is ordinary link visibility. Implementing the algorithm revealed one
+          mismatch, in the windows used by Algorithm 3 (Section 8).
         </p>
         <p>
-          The paper ends with the case of several mirrors, where a beam can be reflected back and forth between
-          them. Without a bound on the number of reflections it is not even clear how to compute the visibility
-          polygon of a point, and the <var>k</var>-link case with at most <var>t</var> reflections per beam is left
-          as future work. Linear time cannot carry over in general: when every edge is a mirror, a single
-          reflection already yields a region of complexity Θ(<var>n</var>²) (Aronov et al. 1998). As far as I could
-          find, the problem is still open.
+          The paper ends with the case of several mirrors. A beam can then bounce back and forth between them.
+          Without a limit on the number of bounces, it is not even clear how to compute the visibility polygon of a
+          single point. The <var>k</var>-link case with at most <var>t</var> bounces per beam is left as future
+          work. Linear time cannot carry over in general: if every edge is a mirror, a single bounce can already
+          give a region of complexity Θ(<var>n</var>²) (Aronov et al. 1998). As far as I could find, the problem
+          is still open.
         </p>
       </section>
 
       <section id="design">
         <h2><span class="number">8</span>Design decisions</h2>
         <p>
-          The goal of this implementation is to understand and illustrate the paper's algorithms, not to reach their
-          optimal running time. Their structure is kept: the link distance <var>ℓ</var>, the two levels where the
-          mirror matters, and Algorithm 3 over the windows. Several steps, however, are deliberately not implemented
-          at their ideal complexity. Where the paper calls a linear-time subroutine from earlier work, I used a
+          The goal of this implementation is to understand and illustrate the paper's algorithms, not to reach
+          their optimal running time. I kept their structure: the link distance <var>ℓ</var>, the two levels where
+          the mirror matters, and Algorithm 3 over the windows. Some steps are deliberately not implemented at
+          their ideal complexity. Where the paper relies on a linear-time subroutine from earlier work, I used a
           simpler method that computes the same region, or a close approximation of it. The optimal versions would
-          not add to the understanding of the paper, so I did not consider them necessary.
+          not help to understand the paper, so I did not consider them necessary.
         </p>
 
         <h3>One link with a mirror</h3>
         <p>
-          Kouhestani et al. build a helper polygon behind the mirror, with <var>q</var>′ as an extra vertex, and run
-          a linear-time visibility algorithm in it. I compute the same region with one rotational sweep from
-          <var>q</var>′ over the visible part of the mirror, in <var>O</var>(<var>n</var> log <var>n</var>) time.
-          This avoids the helper polygon, whose vertices are not integers and which has <var>q</var>′ on its
-          boundary, and keeps every orientation test exact on integer input. The union with the direct view uses
-          the Clipper library instead of the linear walk along the boundary.
+          Kouhestani et al. build a helper polygon behind the mirror and run a linear-time visibility algorithm in
+          it. I compute the same region with a single rotational sweep from <var>q</var>′, in
+          <var>O</var>(<var>n</var> log <var>n</var>) time. This avoids the helper polygon, whose vertices are not
+          integers. It also keeps every orientation test exact, because the input has integer coordinates. The
+          direct and the mirrored region are merged with the Clipper library instead of a walk along the boundary.
         </p>
 
         <h3>Two links (Algorithm 3)</h3>
         <p>
-          The printed Algorithm 3 loops over the windows of the visibility polygon without the mirror, while
-          <a href="#m-lemma-3">Lemmas 3–5</a> use the windows of the region with the mirror. Where the direct and the reflected view meet,
-          new windows appear that only exist with the mirror; the printed loop never looks behind them and misses
-          points there that two links reach. My implementation follows the lemmas.
+          The printed Algorithm 3 loops over the windows of the visibility polygon without the mirror.
+          <a href="#m-lemma-3">Lemmas 3–5</a>, however, use the windows of the region with the mirror. Where the
+          direct view and the mirrored view meet, new windows appear that only exist with the mirror. The printed
+          loop never looks behind them, so it misses points that two links do reach. My implementation follows the
+          lemmas.
         </p>
         <p>
-          Pockets are not built explicitly. Each point on a window may use the whole mirror rather than only the
-          part inside its pocket, which can only add points that two links reach, so the result is unchanged. Weak
-          visibility from a window, linear-time in the paper (Guibas et al. 1987), is approximated by sampling
-          points every 2 px along the window and taking the union of their visibility polygons. This is the one
-          approximate step, and denser sampling cannot make it exact: next to a shadow edge through two reflex
-          vertices, a point sees only a sliver of the window, which shrinks as the point approaches the edge. The
-          error is one-sided: points near shadow edges may be missed, but no point is added that is not reached.
+          I do not build the pockets explicitly. Instead, every point on a window may use the whole mirror, not
+          only the part inside its pocket. This can only add points that two links really reach, so the result
+          stays the same.
+        </p>
+        <p>
+          The paper computes weak visibility from a window exactly, in linear time (Guibas et al. 1987). I
+          approximate it: I take points every 2 px along the window and merge their visibility polygons. This is
+          the only approximate step, and more samples cannot make it exact. Near a shadow edge through two reflex
+          vertices, a point sees only a thin sliver of the window, and the sliver gets thinner the closer the point
+          is to the edge. The error only goes one way: points close to a shadow edge may be missed, but no point is
+          ever added by mistake.
         </p>
 
         <h3>Any number of links (Algorithm 4.2)</h3>
         <p>
-          The link distance <var>ℓ</var>, the two levels where the mirror is used, and ignoring the mirror from
-          level <var>ℓ</var>&nbsp;+&nbsp;2 on (<a href="#m-lemma-8">Lemma 8</a>) follow the paper exactly. Instead of the window partition,
-          which computes all levels in linear time (Suri 1986), the levels without the mirror are grown one at a
-          time through their windows, and <var>ℓ</var> is found the same way, by growing levels until one touches
-          the mirror. The regions are the same; only the running time now depends on <var>k</var>.
+          The link distance <var>ℓ</var>, the two levels with the mirror, and ignoring the mirror after level
+          <var>ℓ</var>&nbsp;+&nbsp;1 (<a href="#m-lemma-8">Lemma 8</a>) follow the paper exactly. The difference is
+          in the levels without the mirror. The paper computes them all at once with the window partition (Suri
+          1986). I grow them one level at a time, through the windows of the previous level. I find <var>ℓ</var>
+          the same way, by growing levels until one of them touches the mirror. The regions are the same; only the
+          running time now depends on <var>k</var>.
         </p>
 
         <h3>Running time</h3>
         <p>
-          Mine is <var>O</var>(<var>k</var> · <var>s</var> · <var>n</var> log <var>n</var>) plus the unions, where
-          <var>s</var> is the number of sample points per level. Since <var>s</var> grows with the length of the
-          windows in pixels, the same polygon scaled up takes longer: the bound depends on the coordinates, not
-          only on <var>n</var>, which makes it <em>pseudo-polynomial</em>. For polygons with a few dozen vertices
-          this takes a few tens of milliseconds. The general building blocks follow the same choice: a rotational
-          sweep for visibility polygons (de Berg et al. 2008) instead of Lee's linear-time algorithm, and exact
-          sign tests on integer input.
+          My implementation runs in <var>O</var>(<var>k</var> · <var>s</var> · <var>n</var> log <var>n</var>) time,
+          plus the cost of the unions. Here <var>s</var> is the number of sample points per level. Because
+          <var>s</var> grows with the length of the windows in pixels, the same room drawn larger takes longer. The
+          running time therefore depends on the coordinates and not only on <var>n</var>, which is called
+          <em>pseudo-polynomial</em>. For rooms with a few dozen vertices, it takes a few tens of milliseconds.
+        </p>
+        <p>
+          The general building blocks follow the same choice: a rotational sweep for visibility polygons (de Berg
+          et al. 2008) instead of Lee's linear-time algorithm, and exact sign tests on integer input.
         </p>
       </section>
 
       <section id="related">
         <h2><span class="number">9</span>Related work</h2>
         <p>
-          The paper builds directly on Kouhestani et al. (2010), who compute the visibility polygon of a point or a
-          segment with one mirror in linear time. Its other building blocks are classic linear-time results:
-          visibility from a point (Lee 1983, corrected by Joe and Simpson 1987), weak visibility from a segment
-          (Guibas et al. 1987), and minimum-link paths (Suri 1986), the basis of the window partition surveyed by
-          Maheshwari et al. (2000). It also uses Bose et al. (2002) for the fact that a segment intersects at most
-          two windows, and Langetepe et al. (2010) for visibility from a polygon.
+          The paper builds directly on Kouhestani et al. (2010), who compute what a point or a segment sees with
+          one mirror, in linear time. Its other building blocks are classic linear-time results. Lee (1983) computes
+          the visibility polygon of a point, and Joe and Simpson (1987) corrected his algorithm. Guibas et al.
+          (1987) compute weak visibility from a segment. Suri (1986) computes minimum-link paths, which lead to the
+          window partition surveyed by Maheshwari et al. (2000). The paper also uses Bose et al. (2002) for the fact
+          that a segment crosses at most two windows, and Langetepe et al. (2010) for visibility from a polygon.
         </p>
         <p>
-          For the implementation, my main source is de Berg et al. (2008), for the rotational sweep (also Asano
-          1985) and the basic predicates, with O'Rourke (1998) as a second reference. Bungiu et al. (2014) show
-          that simple visibility algorithms often beat the linear-time ones in practice. The exact signs in the
-          mirror sweep come from Shewchuk's robust predicates (1997), and the unions from Clipper, an
+          For the implementation, my main source is de Berg et al. (2008). It gives the rotational sweep (also
+          Asano 1985) and the basic geometric tests, with O'Rourke (1998) as a second reference. Bungiu et al.
+          (2014) show that simple visibility algorithms often beat the linear-time ones in practice. The exact signs
+          in the mirror sweep use Shewchuk's robust predicates (1997), and the unions use Clipper, an
           implementation of Vatti's clipping algorithm (1992).
         </p>
       </section>

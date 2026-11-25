@@ -10,8 +10,18 @@ p5.disableFriendlyErrors = true;
 const WIDTH = 640;
 const HEIGHT = 400;
 const GRAB = 10;
+const MARGIN = 8;
 
 const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) <= GRAB;
+const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
+
+/** Where a point lies with respect to the room: 'inside', 'wall' (on a wall or corner) or 'outside'. */
+function placeInRoom(room, point) {
+  const n = room.length;
+  const onWall = room.some((a, i) => orientation(a, room[(i + 1) % n], point) === ON && onSegment(a, room[(i + 1) % n], point));
+  if (onWall) return 'wall';
+  return pointInPolygon(point, room) ? 'inside' : 'outside';
+}
 
 export class RoomCanvas {
   constructor(host, scene, { features }) {
@@ -75,6 +85,12 @@ export class RoomCanvas {
     return { x: Math.round(p.mouseX), y: Math.round(HEIGHT - p.mouseY) };
   }
 
+  /** The mouse position kept inside the canvas, so a dragged sensor or corner cannot be lost. */
+  dragPoint(p) {
+    const m = this.mouse(p);
+    return { x: clamp(m.x, MARGIN, WIDTH - MARGIN), y: clamp(m.y, MARGIN, HEIGHT - MARGIN) };
+  }
+
   inside(p) {
     return p.mouseX >= 0 && p.mouseX <= WIDTH && p.mouseY >= 0 && p.mouseY <= HEIGHT;
   }
@@ -119,14 +135,9 @@ export class RoomCanvas {
   /** The regions need the sensor strictly inside the room: not outside it and not on a wall. */
   sensorInside() {
     try {
-      const n = this.room.length;
-      const onWall = this.room.some((a, i) => orientation(a, this.room[(i + 1) % n], this.q) === ON && onSegment(a, this.room[(i + 1) % n], this.q));
-      if (onWall) {
-        this.notes.push('The sensor is on a wall. Move it into the room.');
-        return false;
-      }
-      if (pointInPolygon(this.q, this.room)) return true;
-      this.notes.push('The sensor is outside the room.');
+      const place = placeInRoom(this.room, this.q);
+      if (place === 'inside') return true;
+      this.notes.push(place === 'wall' ? 'The sensor is on a wall. Move it into the room.' : 'The sensor is outside the room.');
       return false;
     } catch (error) {
       this.notes.push(`Sensor check: ${explain(error)}`);
@@ -163,10 +174,14 @@ export class RoomCanvas {
 
   onDrag(p) {
     if (!this.dragging) return;
-    const m = this.mouse(p);
+    const m = this.dragPoint(p);
     const { kind, index } = this.dragging;
-    if (kind === 'sensor') this.scene.moveSensor(m);
     if (kind === 'corner') this.scene.moveCorner(index, m);
+    if (kind !== 'sensor') return;
+    // A sensor inside the room stays inside: a drag onto a wall or out of the room is ignored. A sensor that is
+    // already outside (after drawing a new room) can move freely, so it can be brought back in.
+    const leaves = placeInRoom(this.room, this.q) === 'inside' && placeInRoom(this.room, m) !== 'inside';
+    if (!leaves) this.scene.moveSensor(m);
   }
 
   onKey(p) {
