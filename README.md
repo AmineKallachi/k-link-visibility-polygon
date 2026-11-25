@@ -42,7 +42,6 @@ Pockets (block 4) and visibility from a segment with the mirror (block 8) are no
   there is no tolerance in the algorithms. The region seen through the mirror scales the room so that the mirror
   image of the sensor also has whole-number coordinates, and uses exact predicates (`robust-predicates`).
 - Computed points are not tested again: each records the corner (`vertex: i`) or wall (`wall: i`) it lies on.
-- Design decisions and their reasons: [DESIGN-NOTES.md](DESIGN-NOTES.md). Use of AI: [AI-JOURNAL.md](AI-JOURNAL.md).
 
 ## Adding or changing a figure
 
